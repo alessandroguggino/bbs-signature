@@ -7,7 +7,7 @@ none                                                           M. Lodder
                                                                T. Looker
                                                                    Mattr
                                                             A. Whitehead
-                                                        28 February 2022
+                                                            2 March 2022
 
 
                         The BBS Signature Scheme
@@ -189,8 +189,8 @@ Table of Contents
       takes as an arbitrary octet string input and returns a point in G1
       as defined in [I-D.irtf-cfrg-hash-to-curve].  The algorithm first
       requires selection of the pairing friendly curve and digest
-      algorithm, once selected the isogeny simplified SWU map to compute
-      a point in G1 using the random oracle method.  The domain
+      algorithm.  Once selected, apply the isogeny simplified SWU map to
+      compute a point in G1 using the random oracle method.  The domain
       separation tag value is dst.
 
    point_to_octets(P) -> ostr  returns the canonical representation of
