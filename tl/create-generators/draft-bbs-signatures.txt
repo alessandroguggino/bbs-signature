@@ -187,11 +187,7 @@ Table of Contents
 
    hash_to_curve_g1(ostr) -> P  The cryptographic hash function that
       takes as an arbitrary octet string input and returns a point in G1
-      as defined in [I-D.irtf-cfrg-hash-to-curve].  The algorithm first
-      requires selection of the pairing friendly curve and digest
-      algorithm.  Once selected, apply the isogeny simplified SWU map to
-      compute a point in G1 using the random oracle method.  The domain
-      separation tag value is dst.
+      as defined in [I-D.irtf-cfrg-hash-to-curve].
 
    point_to_octets(P) -> ostr  returns the canonical representation of
       the point P as an octet string.  This operation is also known as
