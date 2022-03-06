@@ -7,7 +7,7 @@ none                                                           M. Lodder
                                                                T. Looker
                                                                    Mattr
                                                             A. Whitehead
-                                                            2 March 2022
+                                                            6 March 2022
 
 
                         The BBS Signature Scheme
