@@ -1358,20 +1358,24 @@ svg [stroke="fill"], svg [fill^="#fff"] {
           <dd style="margin-left: 1.5em" id="section-1.2-4.12">points on G1 and G2 respectively. For a pairing-friendly curve, this document denotes operations in E1 and E2 in additive notation, i.e., P + Q denotes point addition and x * P denotes scalar multiplication. Operations in GT are written in multiplicative notation, i.e., a * b is field multiplication.<a href="#section-1.2-4.12" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-1.2-4.13">hash_to_curve_g1(ostr) -&gt; P</dt>
-          <dd style="margin-left: 1.5em" id="section-1.2-4.14">The cryptographic hash function that takes as an arbitrary octet string input and returns a point in G1 as defined in <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span>.<a href="#section-1.2-4.14" class="pilcrow">¶</a>
+<dt id="section-1.2-4.13">Identity<em>G1, Identity</em>G1</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-4.14">The identity element for the G1 and G2 subgroups respectively.<a href="#section-1.2-4.14" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-1.2-4.15">point_to_octets(P) -&gt; ostr</dt>
-          <dd style="margin-left: 1.5em" id="section-1.2-4.16">returns the canonical representation of the point P as an octet string. This operation is also known as serialization.<a href="#section-1.2-4.16" class="pilcrow">¶</a>
+<dt id="section-1.2-4.15">hash_to_curve_g1(ostr) -&gt; P</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-4.16">The cryptographic hash function that takes as an arbitrary octet string input and returns a point in G1 as defined in <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span>.<a href="#section-1.2-4.16" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-1.2-4.17">octets_to_point(ostr) -&gt; P</dt>
-          <dd style="margin-left: 1.5em" id="section-1.2-4.18">returns the point P corresponding to the canonical representation ostr, or INVALID if ostr is not a valid output of point_to_octets.  This operation is also known as deserialization.<a href="#section-1.2-4.18" class="pilcrow">¶</a>
+<dt id="section-1.2-4.17">point_to_octets(P) -&gt; ostr</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-4.18">returns the canonical representation of the point P as an octet string. This operation is also known as serialization.<a href="#section-1.2-4.18" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-1.2-4.19">subgroup_check(P) -&gt; VALID or INVALID</dt>
-          <dd style="margin-left: 1.5em" id="section-1.2-4.20">returns VALID when the point P is an element of the subgroup of order p, and INVALID otherwise. This function can always be implemented by checking that p * P is equal to the identity element.  In some cases, faster checks may also exist, e.g., [Bowe19].<a href="#section-1.2-4.20" class="pilcrow">¶</a>
+<dt id="section-1.2-4.19">octets_to_point(ostr) -&gt; P</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-4.20">returns the point P corresponding to the canonical representation ostr, or INVALID if ostr is not a valid output of point_to_octets.  This operation is also known as deserialization.<a href="#section-1.2-4.20" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-4.21">subgroup_check(P) -&gt; VALID or INVALID</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-4.22">returns VALID when the point P is an element of the subgroup of order p, and INVALID otherwise. This function can always be implemented by checking that p * P is equal to the identity element.  In some cases, faster checks may also exist, e.g., [Bowe19].<a href="#section-1.2-4.22" class="pilcrow">¶</a>
 </dd>
         <dd class="break"></dd>
 </dl>
@@ -1560,7 +1564,7 @@ Procedure:
 
 1. (W, H0, H) = octets_to_point(PK)
 
-2. If W is the identity element, return INVALID
+2. If W == Identity_G2, return INVALID
 
 3. result = subgroup_check(W) &amp;&amp; subgroup_check(H0)
 
@@ -1737,8 +1741,6 @@ Procedure:
 28. return spk
 </pre><a href="#section-3.3.6-2" class="pilcrow">¶</a>
 </div>
-<p id="section-3.3.6-3">How a signature is to be encoded is not covered by this document. (TODO perhaps add some additional information in the appendix)
-(FIXME: Encoding out of scope OK, but wire format is required for test vectors. Unless this document is not normative.)<a href="#section-3.3.6-3" class="pilcrow">¶</a></p>
 <div id="algorithmic-explanation">
 <section id="section-3.3.6.1">
             <h5 id="name-algorithmic-explanation">
@@ -1867,7 +1869,15 @@ Procedure:
 
 1. h = XOF(seed)
 
-2. for i in 0 to length: generators_i = hash_to_curve_g1(h.read(64), dst)
+2. for i in 0 to length:
+
+3.    generator_i = Identity_G1
+
+4.    while(generator_i == Identity_G1 || generator_i == P1)
+
+5.        candidate = hash_to_curve_g1(h.read(64), dst)
+
+6.        if candidate not in generators: generator_i = candidate
 
 3. return generators
 </pre><a href="#section-3.3.8-3" class="pilcrow">¶</a>
