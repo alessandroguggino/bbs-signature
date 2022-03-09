@@ -7,7 +7,7 @@ none                                                           M. Lodder
                                                                T. Looker
                                                                    Mattr
                                                             A. Whitehead
-                                                            6 March 2022
+                                                            9 March 2022
 
 
                         The BBS Signature Scheme
@@ -70,18 +70,21 @@ Table of Contents
    7.  Normative References
    8.  Informative References
    Appendix A.  Appendix
-     A.1.  Usecases
-       A.1.1.  Non-correlating Security Token
-       A.1.2.  Improved Bearer Security Token
-       A.1.3.  Hardware Attestations
-       A.1.4.  Selectively Disclosure Enabled Identity Assertions
-       A.1.5.  Privacy preserving bound signatures
-     A.2.  Additional BLS12-381 Ciphersuite Test Vectors
-       A.2.1.  Modified Message Signature
-       A.2.2.  Extra Unsigned Message Signature
-       A.2.3.  Missing Message Signature
-       A.2.4.  Reordered Message Signature
-       A.2.5.  Wrong Public Key Signature
+     A.1.  BLS12-381 hash_to_curve definition using SHAKE-256
+       A.1.1.  BLS12-381 G1
+       A.1.2.  BLS12-381 G2
+     A.2.  Usecases
+       A.2.1.  Non-correlating Security Token
+       A.2.2.  Improved Bearer Security Token
+       A.2.3.  Hardware Attestations
+       A.2.4.  Selectively Disclosure Enabled Identity Assertions
+       A.2.5.  Privacy preserving bound signatures
+     A.3.  Additional BLS12-381 Ciphersuite Test Vectors
+       A.3.1.  Modified Message Signature
+       A.3.2.  Extra Unsigned Message Signature
+       A.3.3.  Missing Message Signature
+       A.3.4.  Reordered Message Signature
+       A.3.5.  Wrong Public Key Signature
    Authors' Addresses
 
 1.  Introduction
@@ -833,7 +836,7 @@ Procedure:
 
    *NOTE* These fixtures are a work in progress and subject to change
 
-   Further fixtures are available in Appendix A.2
+   Further fixtures are available in Appendix A.3
 
 5.2.1.1.  Key Pair
 
@@ -949,9 +952,113 @@ aacb0e0ccc477de9408ec18810b508abccb975e2c8099ea93ba28bf66c836ac31189097446c5c5b6
 
 Appendix A.  Appendix
 
-A.1.  Usecases
+A.1.  BLS12-381 hash_to_curve definition using SHAKE-256
 
-A.1.1.  Non-correlating Security Token
+   The following defines a hash_to_curve suite
+   [I-D.irtf-cfrg-hash-to-curve] for the BLS12-381 curve for both the G1
+   and G2 subgroups using the extendable output function (XOF) of
+   SHAKE-256 as per the guidance defined in section 8.9 of
+   [I-D.irtf-cfrg-hash-to-curve].
+
+   Note the notation used in the below definitions is sourced from
+   [I-D.irtf-cfrg-hash-to-curve].
+
+A.1.1.  BLS12-381 G1
+
+   The suite of BLS12381G1_XOF:SHAKE-256_SSWU_R0_ is defined as follows:
+
+* encoding type: hash_to_curve (Section 3 of [@!I-D.irtf-cfrg-hash-to-curve])
+
+* E: y^2 = x^3 + 4
+
+* p: 0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab
+
+* m: 1
+
+* k: 128
+
+* expand_message: expand_message_xof (Section 5.4.2 of [@!I-D.irtf-cfrg-hash-to-curve])
+
+* H: SHAKE-256
+
+* L: 64
+
+* f: Simplified SWU for AB == 0 (Section 6.6.3 of [@!I-D.irtf-cfrg-hash-to-curve])
+
+* Z: 11
+
+*  E': y'^2 = x'^3 + A' * x' + B', where
+
+      -  A' = 0x144698a3b8e9433d693a02c96d4982b0ea985383ee66a8d8e8981aef
+         d881ac98936f8da0e0f97f5cf428082d584c1d
+
+      -  B' = 0x12e2908d11688030018b12e8753eee3b2016c1f0f24f4070a0b9c14f
+         cef35ef55a23215a316ceaa5d1cc48e98e172be0
+
+*  iso_map: the 11-isogeny map from E' to E given in Appendix E.2 of [@!I-D.irtf-cfrg-hash-to-curve]
+
+*  h_eff: 0xd201000000010001
+
+   Note that the h_eff values for this suite are copied from that
+   defined for the BLS12381G1_XMD:SHA-256_SSWU_RO_ suite defined in
+   section 8.8.1 of [I-D.irtf-cfrg-hash-to-curve].
+
+   An optimized example implementation of the Simplified SWU mapping to
+   the curve E' isogenous to BLS12-381 G1 is given in Appendix F.2
+   [I-D.irtf-cfrg-hash-to-curve].
+
+A.1.2.  BLS12-381 G2
+
+   The suite of BLS12381G2_XOF:SHAKE-256_SSWU_R0_ is defined as follows:
+
+* encoding type: hash_to_curve (Section 3 of [@!I-D.irtf-cfrg-hash-to-curve])
+
+* E: y^2 = x^3 + 4 * (1 + I)
+
+* base field F is GF(p^m), where
+
+  -  p: 0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6
+         b0f6241eabfffeb153ffffb9feffffffffaaab
+
+  -  m: 2
+
+  -  (1, I) is the basis for F, where I^2 + 1 == 0 in F
+
+* k: 128
+
+* expand_message: expand_message_xof (Section 5.4.2 of [@!I-D.irtf-cfrg-hash-to-curve])
+
+* H: SHAKE-256
+
+* L: 64
+
+* f: Simplified SWU for AB == 0 (Section 6.6.3 of [@!I-D.irtf-cfrg-hash-to-curve])
+
+* Z: -(2 + I)
+
+*  E': y'^2 = x'^3 + A' * x' + B', where
+
+      -  A' = 240 * I
+
+      -  B' = 1012 * (1 + I)
+
+*  iso_map: the isogeny map from E' to E given in Appendix E.3 of [@!I-D.irtf-cfrg-hash-to-curve]
+
+*  h_eff: 0xbc69f08f2ee75b3584c6a0ea91b352888e2a8e9145ad7689986ff0315
+  08ffe1329c2f178731db956d82bf015d1212b02ec0ec69d7477c1ae954cbc06689
+  f6a359894c0adebbf6b4e8020005aaa95551
+
+   Note that the h_eff values for this suite are copied from that
+   defined for the BLS12381G2_XMD:SHA-256_SSWU_RO_ suite defined in
+   section 8.8.1 of [I-D.irtf-cfrg-hash-to-curve].
+
+   An optimized example implementation of the Simplified SWU mapping to
+   the curve E' isogenous to BLS12-381 G2 is given in Appendix F.2
+   [I-D.irtf-cfrg-hash-to-curve].
+
+A.2.  Usecases
+
+A.2.1.  Non-correlating Security Token
 
    In the most general sense BBS signatures can be used in any
    application where a cryptographically secured token is required but
@@ -982,7 +1089,7 @@ A.1.1.  Non-correlating Security Token
    unique proof from the original access token and include that in the
    request instead, thus removing this vector of correlation.
 
-A.1.2.  Improved Bearer Security Token
+A.2.2.  Improved Bearer Security Token
 
    Bearer based security tokens such as JWT based access tokens used in
    the OAuth2.0 protocol are a highly popular format for expressing
@@ -1025,23 +1132,23 @@ A.1.2.  Improved Bearer Security Token
    mitigated.  A resource server also obtains the ability to detect a
    replay attack by ensuring the proof presented is unique.
 
-A.1.3.  Hardware Attestations
+A.2.3.  Hardware Attestations
 
    TODO
 
-A.1.4.  Selectively Disclosure Enabled Identity Assertions
+A.2.4.  Selectively Disclosure Enabled Identity Assertions
 
    TODO
 
-A.1.5.  Privacy preserving bound signatures
+A.2.5.  Privacy preserving bound signatures
 
    TODO
 
-A.2.  Additional BLS12-381 Ciphersuite Test Vectors
+A.3.  Additional BLS12-381 Ciphersuite Test Vectors
 
    *NOTE* These fixtures are a work in progress and subject to change
 
-A.2.1.  Modified Message Signature
+A.3.1.  Modified Message Signature
 
    Using the following message
 
@@ -1055,7 +1162,7 @@ aacb0e0ccc477de9408ec18810b508abccb975e2c8099ea93ba28bf66c836ac31189097446c5c5b6
    the Verify operation should fail signature validation due to the
    message value being different from what was signed
 
-A.2.2.  Extra Unsigned Message Signature
+A.3.2.  Extra Unsigned Message Signature
 
    Using the following messages
 
@@ -1071,7 +1178,7 @@ aacb0e0ccc477de9408ec18810b508abccb975e2c8099ea93ba28bf66c836ac31189097446c5c5b6
    the Verify operation should fail signature validation due to an
    additional message being supplied that was not signed
 
-A.2.3.  Missing Message Signature
+A.3.3.  Missing Message Signature
 
    Using the following messages
 
@@ -1087,7 +1194,7 @@ A.2.3.  Missing Message Signature
    the Verify operation should fail signature validation due to missing
    messages that were originally present during the signing
 
-A.2.4.  Reordered Message Signature
+A.3.4.  Reordered Message Signature
 
    Using the following messages
 
@@ -1119,7 +1226,7 @@ A.2.4.  Reordered Message Signature
    the Verify operation should fail signature validation due to messages
    being re-ordered from the order in which they were signed
 
-A.2.5.  Wrong Public Key Signature
+A.3.5.  Wrong Public Key Signature
 
    Using the following messages
 
