@@ -198,9 +198,9 @@ Table of Contents
    Identity_G1, Identity_G1  The identity element for the G1 and G2
       subgroups respectively.
 
-   hash_to_curve_g1(ostr) -> P  The cryptographic hash function that
-      takes as an arbitrary octet string input and returns a point in G1
-      as defined in [I-D.irtf-cfrg-hash-to-curve].
+   hash_to_curve_g1(ostr) -> P  A cryptographic hash function that takes
+      as an arbitrary octet string input and returns a point in G1 as
+      defined in [I-D.irtf-cfrg-hash-to-curve].
 
    point_to_octets(P) -> ostr  returns the canonical representation of
       the point P as an octet string.  This operation is also known as
@@ -791,8 +791,8 @@ Procedure:
    [I-D.irtf-cfrg-hash-to-curve].
 
    In addition, ciphersuites MUST specify unique domain separation tags
-   for hash_to_curve.  The domain separation tag used in Section 5 is
-   the RECOMMENDED one.
+   for hash_to_curve.  Some guidance around defining this can be found
+   in Section 5.
 
 4.7.  Use of Contexts
 
@@ -842,8 +842,9 @@ Procedure:
       to the canonical representation ostr, or INVALID if ostr is not a
       valid output of point_to_octets.
 
-   *  hash_to_curve_g1: a function that meets requirements set out in
-      [I-D.irtf-cfrg-hash-to-curve].
+   *  hash_to_curve_g1: A cryptographic hash function that takes as an
+      arbitrary octet string input and returns a point in G1 as defined
+      in [I-D.irtf-cfrg-hash-to-curve].
 
    *  dst: Domain separation tag used in the hash_to_curve_g1 operation
 
