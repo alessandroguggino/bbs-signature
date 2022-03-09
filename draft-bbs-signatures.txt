@@ -813,6 +813,9 @@ Procedure:
       to the canonical representation ostr, or INVALID if ostr is not a
       valid output of point_to_octets.
 
+   *  hash_to_curve_g1: a function that meets requirements set out in
+      [I-D.irtf-cfrg-hash-to-curve].
+
    The RECOMMENDED hash-to-curve domain separation tag is the
    ciphersuite ID string defined above.
 
@@ -825,6 +828,9 @@ Procedure:
 
    octets_to_point  follows the format documented in Appendix C section
       2 of [I-D.irtf-cfrg-pairing-friendly-curves].
+
+   hash_to_curve_g1  follows the suite defined in Appendix A.1 for the
+      G1 subgroup
 
 5.2.1.  Test Vectors
 
