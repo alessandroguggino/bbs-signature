@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2022-03-08T00:07:15.727699+00:00",
+  "timestamp": "2022-03-10T00:07:50.586934+00:00",
   "repo": "decentralized-identity/bbs-signature",
   "labels": [
     {
@@ -2400,10 +2400,12 @@
       "author": "tplooker",
       "authorAssociation": "MEMBER",
       "assignees": [],
-      "labels": [],
+      "labels": [
+        "ready-for-pr"
+      ],
       "body": "At the moment within the scope of this specification there are several points of extension, such as\r\n\r\n- How messages are mapped to their appropriate scalar values\r\n- How the generators used to commit each message are created (e.g from a global, issuer specific or signature specific seed)\r\n\r\nMany of these above decisions will be limited or at least formally defined in a concrete [ciphersuite](https://identity.foundation/bbs-signature/draft-bbs-signatures.html#name-bls12-381-ciphersuite) to promote interoperability. However with multiple possible cipher suites overtime that make different choices, how do we ensure that a signature generated under one cipher suite is not confused with one generated under another cipher suite. \r\n\r\nOne proposal to limit the possibility of this occurring is to define that the first message in a BBS signature MUST always be revealed further more this message could contain a range of information OR something more limited like a cipher suite identifier. As raised by @BasileiosKal on the call, putting too much information in this revealed message is likely to create a correlation risk that would erode some of the benefit that BBS signatures provide, so perhaps a better middle ground would be to instead encode the cipher suite identifier (e.g for the current BLS12381 cipher suite in the spec this could be the hash scalar produced from the string `BBS_BLS12381G1_XOF:SHAKE-256`)",
       "createdAt": "2022-03-07T20:29:15Z",
-      "updatedAt": "2022-03-07T23:01:28Z",
+      "updatedAt": "2022-03-08T02:49:48Z",
       "closedAt": null,
       "comments": [
         {
@@ -2482,6 +2484,20 @@
           "body": "+1 from me. I do like the proposal. \r\n\r\nI may prefer the domain separation string to be an optional parameter of the `sign`, `verify` etc functions, so we would avoid saying that the first message MUST always be revealed, which may be confusing (for clarity, i would prefer the input list of messages to be just the attributes the issuer wants to sign). This way, if the prover and the holder have already agreed on what cyber suite to use, it will not be necessary for the prover to actually \"reveal\" that message since the verifier will already \"know it\".",
           "createdAt": "2022-03-07T23:01:28Z",
           "updatedAt": "2022-03-07T23:01:28Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "Agree, in a practical sense I would expect the sign and verify APIs would take the cipher suite id as a seperate parameter rather than as the first message, that way it is clear it wouldn't actually have to be communicated to another party as the expectation is that this is communicated at a higher level similar to the DST.",
+          "createdAt": "2022-03-08T00:27:14Z",
+          "updatedAt": "2022-03-08T01:34:39Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "To me the proposal is clear, so I will submit a PR to further the conversation",
+          "createdAt": "2022-03-08T02:49:48Z",
+          "updatedAt": "2022-03-08T02:49:48Z"
         }
       ]
     },
@@ -2555,6 +2571,58 @@
           "body": "> AFAIK there are no changes to the SPK that I made and should already match the original paper\r\n\r\nI think the first equation is different as i mentioned [here](https://github.com/decentralized-identity/bbs-signature/issues/69#issuecomment-1049939299). This is maybe better discussed elsewhere, (like #69 or maybe in a call?), but not saying that the math are not balanced, just that right now the first equation of the SPK is different (i think its `Abar - D = - A' * e - H0 *r2`, which is not simply the negation of what the paper uses). Whenever the change was introduced, it may need a security analyses (although it may be easier to update to use the same equations as in the paper).",
           "createdAt": "2022-03-07T22:45:44Z",
           "updatedAt": "2022-03-07T23:49:19Z"
+        }
+      ]
+    },
+    {
+      "number": 80,
+      "id": "I_kwDOF8lax85FRXyd",
+      "title": "Define the hash_to_curve operation using SHAKE-256 XOF for BLS12-381 ciphersuite",
+      "url": "https://github.com/decentralized-identity/bbs-signature/issues/80",
+      "state": "CLOSED",
+      "author": "tplooker",
+      "authorAssociation": "MEMBER",
+      "assignees": [],
+      "labels": [],
+      "body": "Currently the [latest hash to curve draft](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-14) only defines [suites](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-14#section-8.8) for the BLS12-381. However due to the efficiencies involved in using SHAKE-256 we need to define the suite within this spec.",
+      "createdAt": "2022-03-08T03:41:45Z",
+      "updatedAt": "2022-03-09T00:42:39Z",
+      "closedAt": "2022-03-09T00:42:39Z",
+      "comments": [
+        {
+          "author": "BasileiosKal",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Not really clear to me what the efficiencies are. SHAKE-256 doesn't seem to have a clear advantage over SHA256 from [here](http://bench.cr.yp.to/results-hash.html#amd64-skylake) and [here](https://keccak.team/sw_performance.html).  @mikelodder7 is the intent to use the faster KangarooTwelve(which is not standardized if I'm not mistaken) or the ParallelHashXOF256?? Also why not use ParallelHash256 if thats the case (do we need an XOF for hash2curve??).",
+          "createdAt": "2022-03-08T20:10:25Z",
+          "updatedAt": "2022-03-08T20:10:25Z"
+        },
+        {
+          "author": "mikelodder7",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "We\u2019re using shake in other areas of the code and it is faster when used in hash to curve. Hash to curve requires multiple calls to sha256 vs one to shake",
+          "createdAt": "2022-03-08T21:21:03Z",
+          "updatedAt": "2022-03-08T21:21:03Z"
+        },
+        {
+          "author": "BasileiosKal",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "That clears it up! Thanks! That helped a lot to clarify it! I'm curious as to why since that is the case, the spec opts for use of expand_message_xmd with sha256 instead of expand_message_xof with shake256 when it comes to bls12-381.",
+          "createdAt": "2022-03-08T21:43:00Z",
+          "updatedAt": "2022-03-08T21:43:52Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "> That clears it up! Thanks! That helped a lot to clarify it! I'm curious as to why since that is the case, the spec opts for use of expand_message_xmd with sha256 instead of expand_message_xof with shake256 when it comes to bls12-381.\r\n\r\nLikewise, this was not immediately clear to me either especially considering other hash_to_curve suites elect to use SHAKE-256 defined in the draft.",
+          "createdAt": "2022-03-09T00:41:26Z",
+          "updatedAt": "2022-03-09T00:41:26Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "Addressed in #81 ",
+          "createdAt": "2022-03-09T00:42:39Z",
+          "updatedAt": "2022-03-09T00:42:39Z"
         }
       ]
     }
@@ -7150,13 +7218,13 @@
       "labels": [],
       "body": "Initial stab at this attempting to document and resolve #38. In general I was keen to define a generic procedure that could take a seed scoped either globally, issuer or signature specific. Detail about the concrete seed we are using the BLS12-381 cipher suite is still missing.",
       "createdAt": "2022-02-24T01:00:31Z",
-      "updatedAt": "2022-03-06T23:52:33Z",
+      "updatedAt": "2022-03-09T04:46:39Z",
       "baseRepository": "decentralized-identity/bbs-signature",
       "baseRefName": "main",
-      "baseRefOid": "d02eced2451d4d63fb765ae0c75f44b9365e9d46",
+      "baseRefOid": "aee0bb43453a9cd972f5347e04735b13d50abbbb",
       "headRepository": "decentralized-identity/bbs-signature",
       "headRefName": "tl/create-generators",
-      "headRefOid": "89bb5c80e3852968a15904140194cfe7f04e3364",
+      "headRefOid": "65c083f53d07c2b9e7607ba6b0a301d991f51d5d",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -7336,13 +7404,13 @@
       "labels": [],
       "body": "Builds on #71 to automate re-creating these and including as test vectors in the specification.",
       "createdAt": "2022-02-24T02:35:06Z",
-      "updatedAt": "2022-02-28T21:27:04Z",
+      "updatedAt": "2022-03-09T04:49:04Z",
       "baseRepository": "decentralized-identity/bbs-signature",
       "baseRefName": "main",
-      "baseRefOid": "d02eced2451d4d63fb765ae0c75f44b9365e9d46",
+      "baseRefOid": "aee0bb43453a9cd972f5347e04735b13d50abbbb",
       "headRepository": "decentralized-identity/bbs-signature",
       "headRefName": "tl/auto-generate-generators",
-      "headRefOid": "98b53c6472831e0ff7e5cfda907fe53552cc386d",
+      "headRefOid": "44bd71c7555562800c0d8fc52ab9db6e79fa4611",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -7478,19 +7546,153 @@
       ],
       "body": "This PR is primarily designed to help support conversation around design options we have here, it is also an extension of #61 and related to #76.\r\n\r\nCurrently for the core sign, verify, spkGen and spkVerify operations take the inputed messages as a set of octet strings so we either need to.\r\n\r\n1. Clarify that the messages supplied here can be of abitrary value and that MapMessageToScalar becomes an operation executed within sign, verify, spkGen or spkVerify.\r\n2. OR clarify that the messages supplied here have to be valid scalars and that MapMessageToScalar MUST be called on each message prior to calling sign, verify, spkGen or spkVerify.\r\n\r\nThe complexity we are managing is not just that the messages need to be mapped to scalars its also that they could be mapped in multiple ways (e.g message -> scalar as hash or as number) so where ever this definition occurs will also have to account for this optionality (e.g sign would not only take a list of messages to sign but the mapping method for each message)",
       "createdAt": "2022-03-07T00:21:10Z",
-      "updatedAt": "2022-03-07T00:21:38Z",
+      "updatedAt": "2022-03-09T04:58:25Z",
       "baseRepository": "decentralized-identity/bbs-signature",
       "baseRefName": "main",
-      "baseRefOid": "1b1f8740747deac1950804aca7743bba9b2ffce5",
+      "baseRefOid": "aee0bb43453a9cd972f5347e04735b13d50abbbb",
       "headRepository": "decentralized-identity/bbs-signature",
       "headRefName": "tl/map-message-generators",
-      "headRefOid": "a4a56ec27468dbdf0d8bde853d01eeeb20172006",
+      "headRefOid": "ab372596a29b25f79558e220a61832c858bd36a5",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
       "mergeCommit": null,
-      "comments": [],
+      "comments": [
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "This PR needs to be updated to use hash_to_field not hash_to_curve",
+          "createdAt": "2022-03-09T04:58:24Z",
+          "updatedAt": "2022-03-09T04:58:24Z"
+        }
+      ],
       "reviews": []
+    },
+    {
+      "number": 81,
+      "id": "PR_kwDOF8lax840GCmr",
+      "title": "Add hash to curve definition for BLS12-381 SHAKE-256 suite",
+      "url": "https://github.com/decentralized-identity/bbs-signature/pull/81",
+      "state": "MERGED",
+      "author": "tplooker",
+      "authorAssociation": "MEMBER",
+      "assignees": [],
+      "labels": [],
+      "body": "As described in #80 currently the [latest hash to curve draft](https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-14#section-8.8) does not define a suite for BLS12-381 which uses the extendable output function of SHAKE-256 used by this draft in the CreateGenerators operation defined in #71 and the MapMessageToScalar operation defined in #61 for the [BLS12-381 ciphersuite](https://identity.foundation/bbs-signature/draft-bbs-signatures.html#name-bls12-381-ciphersuite), this PR establishes that definition so we can point to it.\r\n\r\nNote I would like to review and merge this PR before proceeding with #71 #61",
+      "createdAt": "2022-03-08T09:45:00Z",
+      "updatedAt": "2022-03-09T00:42:25Z",
+      "baseRepository": "decentralized-identity/bbs-signature",
+      "baseRefName": "main",
+      "baseRefOid": "1b1f8740747deac1950804aca7743bba9b2ffce5",
+      "headRepository": "decentralized-identity/bbs-signature",
+      "headRefName": "tl/hash-to-curve",
+      "headRefOid": "edf9cf1d723c7c91d19276b157212a68031f7ed9",
+      "closedAt": "2022-03-09T00:42:21Z",
+      "mergedAt": "2022-03-09T00:42:21Z",
+      "mergedBy": "tplooker",
+      "mergeCommit": {
+        "oid": "aee0bb43453a9cd972f5347e04735b13d50abbbb"
+      },
+      "comments": [
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "Multiple approvals, discussed in issue, merging as it is blocking PR #71 and #61",
+          "createdAt": "2022-03-09T00:42:16Z",
+          "updatedAt": "2022-03-09T00:42:16Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "PRR_kwDOF8lax8412hGL",
+          "commit": {
+            "abbreviatedOid": "edf9cf1"
+          },
+          "author": "mikelodder7",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2022-03-08T19:29:53Z",
+          "updatedAt": "2022-03-08T19:29:53Z",
+          "comments": []
+        },
+        {
+          "id": "PRR_kwDOF8lax8413CCN",
+          "commit": {
+            "abbreviatedOid": "edf9cf1"
+          },
+          "author": "BasileiosKal",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2022-03-08T21:43:09Z",
+          "updatedAt": "2022-03-08T21:43:09Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 82,
+      "id": "PR_kwDOF8lax840JXvf",
+      "title": "Add hash to curve definition to ciphersuite format definition and BLS12-381 ciphersuite",
+      "url": "https://github.com/decentralized-identity/bbs-signature/pull/82",
+      "state": "MERGED",
+      "author": "tplooker",
+      "authorAssociation": "MEMBER",
+      "assignees": [],
+      "labels": [],
+      "body": "As described above in the title, this defines the usage of the hash to curve suite that was defined in #80 ",
+      "createdAt": "2022-03-09T03:16:21Z",
+      "updatedAt": "2022-03-09T18:54:10Z",
+      "baseRepository": "decentralized-identity/bbs-signature",
+      "baseRefName": "main",
+      "baseRefOid": "aee0bb43453a9cd972f5347e04735b13d50abbbb",
+      "headRepository": "decentralized-identity/bbs-signature",
+      "headRefName": "tl/add-hash-to-curve-bls12381-suite",
+      "headRefOid": "34feafbdd5b5f6e746d3a4486b1cb113dd25b6b1",
+      "closedAt": "2022-03-09T18:54:06Z",
+      "mergedAt": "2022-03-09T18:54:06Z",
+      "mergedBy": "tplooker",
+      "mergeCommit": {
+        "oid": "ba9aa770453f1c99c9c32996c5bdae6af6b20ec2"
+      },
+      "comments": [
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "Multiple approvals, somewhat blocking progress on other PR's, merging",
+          "createdAt": "2022-03-09T18:54:02Z",
+          "updatedAt": "2022-03-09T18:54:02Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "PRR_kwDOF8lax84137Xz",
+          "commit": {
+            "abbreviatedOid": "34feafb"
+          },
+          "author": "mikelodder7",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2022-03-09T04:34:02Z",
+          "updatedAt": "2022-03-09T04:34:02Z",
+          "comments": []
+        },
+        {
+          "id": "PRR_kwDOF8lax8416TJh",
+          "commit": {
+            "abbreviatedOid": "34feafb"
+          },
+          "author": "BasileiosKal",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2022-03-09T14:50:32Z",
+          "updatedAt": "2022-03-09T14:50:32Z",
+          "comments": []
+        }
+      ]
     }
   ]
 }
