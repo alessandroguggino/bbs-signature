@@ -1882,12 +1882,12 @@ Procedure:
 <p id="section-3.3.8-1">The CreateGenerators operation defines how to create a set of generators that form a part of the public parameters used by the BBS Signature scheme to accomplish operations such as sign, verify, spkgen and spkverify.<a href="#section-3.3.8-1" class="pilcrow">¶</a></p>
 <p id="section-3.3.8-2"><em>Note</em> The scope in which the seed used below is determined, is still an active conversation in the working group see <a href="#ciphersuites" class="xref">Section 5</a> for the current method being used.<a href="#section-3.3.8-2" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-3.3.8-3">
-<pre>generators = CreateGenerators(dst, seed, length);
+<pre>generators = CreateGenerators(dst, message_generator_seed, length);
 
 Inputs:
 
 dst, octet string - Domain Separation Tag
-seed, octet string
+message_generator_seed, octet string
 length, unsigned integer - Number of generators to create from the seed and dst
 
 Outputs:
@@ -2035,6 +2035,9 @@ A cryptographic hash function that takes as an arbitrary octet string input and 
           <li class="normal" id="section-5.1-1.5">
             <p id="section-5.1-1.5.1">dst: Domain separation tag used in the hash_to_curve_g1 operation<a href="#section-5.1-1.5.1" class="pilcrow">¶</a></p>
 </li>
+          <li class="normal" id="section-5.1-1.6">
+            <p id="section-5.1-1.6.1">message<em>generator</em>seed: The seed used to generate the message generators which form part of the public parameters used by the BBS signature scheme, Note there are multiple possible scopes for this seed including; a globally shared seed (where the resulting message generators are common across all BBS signatures); a signer specific seed (where the message generators are specific to a signer); signature specific seed (where the message generators are specific per signature). The ciphersuite MUST define this seed OR how to compute it as a pre-cursor operations to any others.<a href="#section-5.1-1.6.1" class="pilcrow">¶</a></p>
+</li>
         </ul>
 </section>
 </div>
@@ -2061,7 +2064,11 @@ A cryptographic hash function that takes as an arbitrary octet string input and 
 </dd>
           <dd class="break"></dd>
 <dt id="section-5.2-1.9">dst</dt>
-          <dd style="margin-left: 1.5em" id="section-5.2-1.10">"BBS<em>BLS12381G1</em>XOF:SHAKE-256<em>SSWU</em>RO"<a href="#section-5.2-1.10" class="pilcrow">¶</a>
+          <dd style="margin-left: 1.5em" id="section-5.2-1.10">"BBS<em>BLS12381G1</em>XOF:SHAKE-256<em>SSWU</em>RO_"<a href="#section-5.2-1.10" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-5.2-1.11">message<em>generator</em>seed</dt>
+          <dd style="margin-left: 1.5em" id="section-5.2-1.12">A global seed value of "BBS<em>BLS12381G1</em>XOF:SHAKE-256<em>SSWU</em>RO<em>MESSAGE</em>GENERATOR_SEED" which is used by the <a href="#creategenerators" class="xref">Section 3.3.8</a> operation to compute the required set of message generators.<a href="#section-5.2-1.12" class="pilcrow">¶</a>
 </dd>
         <dd class="break"></dd>
 </dl>
@@ -2074,52 +2081,93 @@ A cryptographic hash function that takes as an arbitrary octet string input and 
 <p id="section-5.2.1-2"><strong>NOTE</strong> All binary data below is represented as octet strings encoded in hexadecimal format<a href="#section-5.2.1-2" class="pilcrow">¶</a></p>
 <p id="section-5.2.1-3"><strong>NOTE</strong> These fixtures are a work in progress and subject to change<a href="#section-5.2.1-3" class="pilcrow">¶</a></p>
 <p id="section-5.2.1-4">Further fixtures are available in <a href="#additional-bls12-381-ciphersuite-test-vectors" class="xref">Appendix A.3</a><a href="#section-5.2.1-4" class="pilcrow">¶</a></p>
-<div id="key-pair">
+<div id="message-generators">
 <section id="section-5.2.1.1">
-            <h5 id="name-key-pair">
-<a href="#section-5.2.1.1" class="section-number selfRef">5.2.1.1. </a><a href="#name-key-pair" class="section-name selfRef">Key Pair</a>
+            <h5 id="name-message-generators">
+<a href="#section-5.2.1.1" class="section-number selfRef">5.2.1.1. </a><a href="#name-message-generators" class="section-name selfRef">Message Generators</a>
             </h5>
-<p id="section-5.2.1.1-1">Following the procedure defined in <a href="#keygen" class="xref">Section 3.3.1</a> with an input IKM value as follows<a href="#section-5.2.1.1-1" class="pilcrow">¶</a></p>
+<p id="section-5.2.1.1-1">Following the procedure defined in <a href="#creategenerators" class="xref">Section 3.3.8</a> with an input seed value of<a href="#section-5.2.1.1-1" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-5.2.1.1-2">
-<pre>0cf3cc44220fdb2f8ca701f8686ed7e9a32db440edc15a9b62222905d8c7bba3
+<pre>BBS_BLS12381G1_XOF:SHAKE-256_SSWU_RO_MESSAGE_GENERATOR_SEED
 </pre><a href="#section-5.2.1.1-2" class="pilcrow">¶</a>
 </div>
-<p id="section-5.2.1.1-3">Outputs the following SK value<a href="#section-5.2.1.1-3" class="pilcrow">¶</a></p>
+<p id="section-5.2.1.1-3">a dst of<a href="#section-5.2.1.1-3" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-5.2.1.1-4">
-<pre>5fb7e74b515a7ecd39e8b38df0eaa66e3630ec90c4df496f67ee7a2737dcb321
+<pre>BBS_BLS12381G1_XOF:SHAKE-256_SSWU_RO_
 </pre><a href="#section-5.2.1.1-4" class="pilcrow">¶</a>
 </div>
-<p id="section-5.2.1.1-5">Following the procedure defined in <a href="#sktopk" class="xref">Section 3.3.2</a> with an input SK value as above produces the following PK value<a href="#section-5.2.1.1-5" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-5.2.1.1-6">
+<p id="section-5.2.1.1-5">and a length value of <code>10</code><a href="#section-5.2.1.1-5" class="pilcrow">¶</a></p>
+<p id="section-5.2.1.1-6">Outputs the following values<a href="#section-5.2.1.1-6" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-5.2.1.1-7">
+<pre>95c10133d125fd556a14b96b2f0607b757d41fbce15b61fc64ab60c4c9e3b268469abc41fb7713dc4034d3fee18eed6f
+
+a410a9c0fa4f48e14dc9f3cc11164625f98f5cc9c0e6f7690008ab6c83a073a63811caf1598d4094593bd1233bdf228e
+
+861b44ba4897f9b10b926c22c60e09c7234c76b75bfb15bcb786ee7c26430dbfe6576ffbfd2cb88ba960847b134c17f2
+
+a7f1b70c9bf41f7b686c19198fa29a2b55088e719ae1b5219046121c1d70e1d7f2eccc5ca0e6f1fb8073fac69752b455
+
+b06b73e3cfa6003d39fdaad503eaae19d9f790e5ce706f2249a96c582f2ea74fc75f0f0d3dddbcbec8192b464eae6e3f
+
+a287f77f414644ce6d1ce101486999af0a0dde5f5017314d27922350888a48d7355ac0c2d20215b12d0f4e743a4fcce8
+
+aa3ad2f578cd54daceccf6e065ae0af32d7b2173a67b2394d08203c64277dfe3d1778782a7834364a22ad1dc6002d773
+
+ab19bd40525e36bb4e132378e0596f21b32d7455de969862f3a48864eb9e2dd4c1e8bc903ceea686861b1dc0280b0b15
+
+91230b37837e5df457ff32eb129fbc5fd31de7af88cb4263b545f998a23294b073d92458be7639b6c867f4e340c209d5
+
+9594346850ba101da9f94b9856bba3843c959d22e8d6d58c3ad8b25c9a2209945ca73cdf9ce6fd51478ecc1377bdad05
+</pre><a href="#section-5.2.1.1-7" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="key-pair">
+<section id="section-5.2.1.2">
+            <h5 id="name-key-pair">
+<a href="#section-5.2.1.2" class="section-number selfRef">5.2.1.2. </a><a href="#name-key-pair" class="section-name selfRef">Key Pair</a>
+            </h5>
+<p id="section-5.2.1.2-1">Following the procedure defined in <a href="#keygen" class="xref">Section 3.3.1</a> with an input IKM value as follows<a href="#section-5.2.1.2-1" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-5.2.1.2-2">
+<pre>0cf3cc44220fdb2f8ca701f8686ed7e9a32db440edc15a9b62222905d8c7bba3
+</pre><a href="#section-5.2.1.2-2" class="pilcrow">¶</a>
+</div>
+<p id="section-5.2.1.2-3">Outputs the following SK value<a href="#section-5.2.1.2-3" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-5.2.1.2-4">
+<pre>5fb7e74b515a7ecd39e8b38df0eaa66e3630ec90c4df496f67ee7a2737dcb321
+</pre><a href="#section-5.2.1.2-4" class="pilcrow">¶</a>
+</div>
+<p id="section-5.2.1.2-5">Following the procedure defined in <a href="#sktopk" class="xref">Section 3.3.2</a> with an input SK value as above produces the following PK value<a href="#section-5.2.1.2-5" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-5.2.1.2-6">
 <pre>8e146f42de0bf1754692788a4692eeed788f9555837fd208bd6d207affc12916fe25615d5afe2e386984dded54b0bd0809a82bfcd93795a85ee00f5857294cc06391fc049d0b7ea4d1d7ce65548199429dbdb0bf0946f6123daf3454c39bcae4
-</pre><a href="#section-5.2.1.1-6" class="pilcrow">¶</a>
+</pre><a href="#section-5.2.1.2-6" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
 <div id="valid-single-message-signature">
-<section id="section-5.2.1.2">
+<section id="section-5.2.1.3">
             <h5 id="name-valid-single-message-signat">
-<a href="#section-5.2.1.2" class="section-number selfRef">5.2.1.2. </a><a href="#name-valid-single-message-signat" class="section-name selfRef">Valid Single Message Signature</a>
+<a href="#section-5.2.1.3" class="section-number selfRef">5.2.1.3. </a><a href="#name-valid-single-message-signat" class="section-name selfRef">Valid Single Message Signature</a>
             </h5>
-<p id="section-5.2.1.2-1">Using the following message<a href="#section-5.2.1.2-1" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-5.2.1.2-2">
+<p id="section-5.2.1.3-1">Using the following message<a href="#section-5.2.1.3-1" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-5.2.1.3-2">
 <pre>9872ad089e452c7b6e283dfac2a80d58e8d0ff71cc4d5e310a1debdda4a45f02
-</pre><a href="#section-5.2.1.2-2" class="pilcrow">¶</a>
+</pre><a href="#section-5.2.1.3-2" class="pilcrow">¶</a>
 </div>
-<p id="section-5.2.1.2-3">Along with the SK value as defined in <a href="#key-pair" class="xref">Section 5.2.1.1</a> as inputs into the Sign operations, yields the following output signature<a href="#section-5.2.1.2-3" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-5.2.1.2-4">
+<p id="section-5.2.1.3-3">Along with the SK value as defined in <a href="#key-pair" class="xref">Section 5.2.1.2</a> as inputs into the Sign operations, yields the following output signature<a href="#section-5.2.1.3-3" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-5.2.1.3-4">
 <pre>aacb0e0ccc477de9408ec18810b508abccb975e2c8099ea93ba28bf66c836ac31189097446c5c5b67d6aa6aa1a5e01a45d2ee5348010e06d0e9ce7c0737e0e2cd40f270d3fec47e85f6900bce168c0701b87c0afae739823481f3de17823587bec26d5716a3d893a24d996396eca139e
-</pre><a href="#section-5.2.1.2-4" class="pilcrow">¶</a>
+</pre><a href="#section-5.2.1.3-4" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
 <div id="valid-multi-message-signature">
-<section id="section-5.2.1.3">
+<section id="section-5.2.1.4">
             <h5 id="name-valid-multi-message-signatu">
-<a href="#section-5.2.1.3" class="section-number selfRef">5.2.1.3. </a><a href="#name-valid-multi-message-signatu" class="section-name selfRef">Valid Multi-Message Signature</a>
+<a href="#section-5.2.1.4" class="section-number selfRef">5.2.1.4. </a><a href="#name-valid-multi-message-signatu" class="section-name selfRef">Valid Multi-Message Signature</a>
             </h5>
-<p id="section-5.2.1.3-1">Using the following messages (<strong>Note</strong> the ordering of the messages MUST be preserved)<a href="#section-5.2.1.3-1" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-5.2.1.3-2">
+<p id="section-5.2.1.4-1">Using the following messages (<strong>Note</strong> the ordering of the messages MUST be preserved)<a href="#section-5.2.1.4-1" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-5.2.1.4-2">
 <pre>9872ad089e452c7b6e283dfac2a80d58e8d0ff71cc4d5e310a1debdda4a45f02
 
 38376138626436353664343965653037623831313065316438666434663164636566366662396263333638633439326439626338633466393861373339616336
@@ -2139,12 +2187,12 @@ A cryptographic hash function that takes as an arbitrary octet string input and 
 37333732653964616135656433316536636435633832356561633162383535653834343736613164393439333261613334386530376237333230393132343136
 
 63333434313336643961623032646134646435393038626262613931336165366635386332636338343462383032613666383131663566623037356639623830
-</pre><a href="#section-5.2.1.3-2" class="pilcrow">¶</a>
+</pre><a href="#section-5.2.1.4-2" class="pilcrow">¶</a>
 </div>
-<p id="section-5.2.1.3-3">Along with the SK value as defined in <a href="#key-pair" class="xref">Section 5.2.1.1</a> as inputs into the Sign operations, yields the following output signature<a href="#section-5.2.1.3-3" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-5.2.1.3-4">
+<p id="section-5.2.1.4-3">Along with the SK value as defined in <a href="#key-pair" class="xref">Section 5.2.1.2</a> as inputs into the Sign operations, yields the following output signature<a href="#section-5.2.1.4-3" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-5.2.1.4-4">
 <pre>89f61a400283385ab6d6233e9a7c4659e1822e280d4b9a0ba9ec867faa59a4ff27f44d956a3f2e297236342d7419a4c758385744297a55459c3a18c5ed76601e0c2226da1a95df39f9be2bbf2311b46859482c85ba0b109d5fa9b7cbaf90f9b8bc78f506666c9e64f14490441669ccc5
-</pre><a href="#section-5.2.1.3-4" class="pilcrow">¶</a>
+</pre><a href="#section-5.2.1.4-4" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
@@ -2387,7 +2435,7 @@ A cryptographic hash function that takes as an arbitrary octet string input and 
 <pre>aacb0e0ccc477de9408ec18810b508abccb975e2c8099ea93ba28bf66c836ac31189097446c5c5b67d6aa6aa1a5e01a45d2ee5348010e06d0e9ce7c0737e0e2cd40f270d3fec47e85f6900bce168c0701b87c0afae739823481f3de17823587bec26d5716a3d893a24d996396eca139e
 </pre><a href="#appendix-A.3.1-4" class="pilcrow">¶</a>
 </div>
-<p id="appendix-A.3.1-5">Along with the PK value as defined in <a href="#key-pair" class="xref">Section 5.2.1.1</a> as inputs into the Verify operation should fail signature validation due to the message value being different from what was signed<a href="#appendix-A.3.1-5" class="pilcrow">¶</a></p>
+<p id="appendix-A.3.1-5">Along with the PK value as defined in <a href="#key-pair" class="xref">Section 5.2.1.2</a> as inputs into the Verify operation should fail signature validation due to the message value being different from what was signed<a href="#appendix-A.3.1-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="extra-unsigned-message-signature">
@@ -2407,7 +2455,7 @@ A cryptographic hash function that takes as an arbitrary octet string input and 
 <pre>aacb0e0ccc477de9408ec18810b508abccb975e2c8099ea93ba28bf66c836ac31189097446c5c5b67d6aa6aa1a5e01a45d2ee5348010e06d0e9ce7c0737e0e2cd40f270d3fec47e85f6900bce168c0701b87c0afae739823481f3de17823587bec26d5716a3d893a24d996396eca139e
 </pre><a href="#appendix-A.3.2-4" class="pilcrow">¶</a>
 </div>
-<p id="appendix-A.3.2-5">Along with the PK value as defined in <a href="#key-pair" class="xref">Section 5.2.1.1</a> as inputs into the Verify operation should fail signature validation due to an additional message being supplied that was not signed<a href="#appendix-A.3.2-5" class="pilcrow">¶</a></p>
+<p id="appendix-A.3.2-5">Along with the PK value as defined in <a href="#key-pair" class="xref">Section 5.2.1.2</a> as inputs into the Verify operation should fail signature validation due to an additional message being supplied that was not signed<a href="#appendix-A.3.2-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="missing-message-signature">
@@ -2427,7 +2475,7 @@ A cryptographic hash function that takes as an arbitrary octet string input and 
 <pre>89f61a400283385ab6d6233e9a7c4659e1822e280d4b9a0ba9ec867faa59a4ff27f44d956a3f2e297236342d7419a4c758385744297a55459c3a18c5ed76601e0c2226da1a95df39f9be2bbf2311b46859482c85ba0b109d5fa9b7cbaf90f9b8bc78f506666c9e64f14490441669ccc5
 </pre><a href="#appendix-A.3.3-4" class="pilcrow">¶</a>
 </div>
-<p id="appendix-A.3.3-5">Along with the PK value as defined in <a href="#key-pair" class="xref">Section 5.2.1.1</a> as inputs into the Verify operation should fail signature validation due to missing messages that were originally present during the signing<a href="#appendix-A.3.3-5" class="pilcrow">¶</a></p>
+<p id="appendix-A.3.3-5">Along with the PK value as defined in <a href="#key-pair" class="xref">Section 5.2.1.2</a> as inputs into the Verify operation should fail signature validation due to missing messages that were originally present during the signing<a href="#appendix-A.3.3-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="reordered-message-signature">
@@ -2463,7 +2511,7 @@ A cryptographic hash function that takes as an arbitrary octet string input and 
 <pre>89f61a400283385ab6d6233e9a7c4659e1822e280d4b9a0ba9ec867faa59a4ff27f44d956a3f2e297236342d7419a4c758385744297a55459c3a18c5ed76601e0c2226da1a95df39f9be2bbf2311b46859482c85ba0b109d5fa9b7cbaf90f9b8bc78f506666c9e64f14490441669ccc5
 </pre><a href="#appendix-A.3.4-4" class="pilcrow">¶</a>
 </div>
-<p id="appendix-A.3.4-5">Along with the PK value as defined in <a href="#key-pair" class="xref">Section 5.2.1.1</a> as inputs into the Verify operation should fail signature validation due to messages being re-ordered from the order in which they were signed<a href="#appendix-A.3.4-5" class="pilcrow">¶</a></p>
+<p id="appendix-A.3.4-5">Along with the PK value as defined in <a href="#key-pair" class="xref">Section 5.2.1.2</a> as inputs into the Verify operation should fail signature validation due to messages being re-ordered from the order in which they were signed<a href="#appendix-A.3.4-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="wrong-public-key-signature">
@@ -2499,7 +2547,7 @@ A cryptographic hash function that takes as an arbitrary octet string input and 
 <pre>89f61a400283385ab6d6233e9a7c4659e1822e280d4b9a0ba9ec867faa59a4ff27f44d956a3f2e297236342d7419a4c758385744297a55459c3a18c5ed76601e0c2226da1a95df39f9be2bbf2311b46859482c85ba0b109d5fa9b7cbaf90f9b8bc78f506666c9e64f14490441669ccc5
 </pre><a href="#appendix-A.3.5-4" class="pilcrow">¶</a>
 </div>
-<p id="appendix-A.3.5-5">Along with the PK value as defined in <a href="#key-pair" class="xref">Section 5.2.1.1</a> as inputs into the Verify operation should fail signature validation due to public key used to verify is in-correct<a href="#appendix-A.3.5-5" class="pilcrow">¶</a></p>
+<p id="appendix-A.3.5-5">Along with the PK value as defined in <a href="#key-pair" class="xref">Section 5.2.1.2</a> as inputs into the Verify operation should fail signature validation due to public key used to verify is in-correct<a href="#appendix-A.3.5-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
