@@ -1942,7 +1942,7 @@ Outputs:
 
 Procedure:
 
-1. result = hash_to_field_g1(msg, 1)
+1. result = hash_to_field(msg, 1)
 
 2. return result
 </pre><a href="#section-3.3.9.1-2" class="pilcrow">¶</a>
@@ -2071,10 +2071,10 @@ a function that returns the point P corresponding to the canonical representatio
 A cryptographic hash function that takes as an arbitrary octet string input and returns a point in G1 as defined in <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span>.<a href="#section-5.1-1.4.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-5.1-1.5">
-            <p id="section-5.1-1.5.1">hash_to_field_g1: A function that follows the procedure outlined in section 5.3 of <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span><a href="#section-5.1-1.5.1" class="pilcrow">¶</a></p>
+            <p id="section-5.1-1.5.1">hash_to_field: A function that follows the procedure outlined in section 5.3 of <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span><a href="#section-5.1-1.5.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-5.1-1.6">
-            <p id="section-5.1-1.6.1">dst: Domain separation tag used in the hash_to_curve_g1 and hash_to_field_g1 operations<a href="#section-5.1-1.6.1" class="pilcrow">¶</a></p>
+            <p id="section-5.1-1.6.1">dst: Domain separation tag used in the hash_to_curve_g1 and hash_to_field operations<a href="#section-5.1-1.6.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 </section>
@@ -2101,8 +2101,8 @@ A cryptographic hash function that takes as an arbitrary octet string input and 
           <dd style="margin-left: 1.5em" id="section-5.2-1.8">follows the suite defined in <a href="#bls12-381-hash-to-curve-definition-using-shake-256" class="xref">Appendix A.1</a> for the G1 subgroup<a href="#section-5.2-1.8" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-5.2-1.9">hash_to_field_g1</dt>
-          <dd style="margin-left: 1.5em" id="section-5.2-1.10">adopts the required parameters from the suite defined in <a href="#bls12-381-hash-to-curve-definition-using-shake-256" class="xref">Appendix A.1</a> for the G1 subgroup to satisfy those described in section 5.3 <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span> along with the defined dst<a href="#section-5.2-1.10" class="pilcrow">¶</a>
+<dt id="section-5.2-1.9">hash_to_field</dt>
+          <dd style="margin-left: 1.5em" id="section-5.2-1.10">adopts the required parameters from the suites defined in <a href="#bls12-381-hash-to-curve-definition-using-shake-256" class="xref">Appendix A.1</a> to satisfy those described in section 5.3 <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span> along with the defined dst<a href="#section-5.2-1.10" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
 <dt id="section-5.2-1.11">dst</dt>
