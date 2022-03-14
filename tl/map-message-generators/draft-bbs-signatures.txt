@@ -684,12 +684,12 @@ Procedure:
    an active conversation in the working group see Section 5 for the
    current method being used.
 
-generators = CreateGenerators(dst, seed, length);
+generators = CreateGenerators(dst, message_generator_seed, length);
 
 Inputs:
 
 dst, octet string - Domain Separation Tag
-seed, octet string
+message_generator_seed, octet string
 length, unsigned integer - Number of generators to create from the seed and dst
 
 Outputs:
@@ -885,6 +885,16 @@ Procedure:
    *  hash_to_field_dst: Domain separation tag used in the hash_to_field
       operation
 
+   *  message_generator_seed: The seed used to generate the message
+      generators which form part of the public parameters used by the
+      BBS signature scheme, Note there are multiple possible scopes for
+      this seed including; a globally shared seed (where the resulting
+      message generators are common across all BBS signatures); a signer
+      specific seed (where the message generators are specific to a
+      signer); signature specific seed (where the message generators are
+      specific per signature).  The ciphersuite MUST define this seed OR
+      how to compute it as a pre-cursor operations to any others.
+
 5.2.  BLS12-381 Ciphersuite
 
    H  SHAKE-256 as defined in [SHA3]
@@ -906,6 +916,11 @@ Procedure:
 
    hash_to_field_dst  "BBS_BLS12381FQ_XOF:SHAKE-256_SSWU_RO"
 
+   message_generator_seed  A global seed value of
+      "BBS_BLS12381G1_XOF:SHAKE-256_SSWU_RO_MESSAGE_GENERATOR_SEED"
+      which is used by the Section 3.3.8 operation to compute the
+      required set of message generators.
+
 5.2.1.  Test Vectors
 
    The following section details a basic set of test vectors that can be
@@ -918,7 +933,42 @@ Procedure:
 
    Further fixtures are available in Appendix A.3
 
-5.2.1.1.  Key Pair
+5.2.1.1.  Message Generators
+
+   Following the procedure defined in Section 3.3.8 with an input seed
+   value of
+
+   BBS_BLS12381G1_XOF:SHAKE-256_SSWU_RO_MESSAGE_GENERATOR_SEED
+
+   a dst of
+
+   BBS_BLS12381G1_XOF:SHAKE-256_SSWU_RO_
+
+   and a length value of 10
+
+   Outputs the following values
+
+95c10133d125fd556a14b96b2f0607b757d41fbce15b61fc64ab60c4c9e3b268469abc41fb7713dc4034d3fee18eed6f
+
+a410a9c0fa4f48e14dc9f3cc11164625f98f5cc9c0e6f7690008ab6c83a073a63811caf1598d4094593bd1233bdf228e
+
+861b44ba4897f9b10b926c22c60e09c7234c76b75bfb15bcb786ee7c26430dbfe6576ffbfd2cb88ba960847b134c17f2
+
+a7f1b70c9bf41f7b686c19198fa29a2b55088e719ae1b5219046121c1d70e1d7f2eccc5ca0e6f1fb8073fac69752b455
+
+b06b73e3cfa6003d39fdaad503eaae19d9f790e5ce706f2249a96c582f2ea74fc75f0f0d3dddbcbec8192b464eae6e3f
+
+a287f77f414644ce6d1ce101486999af0a0dde5f5017314d27922350888a48d7355ac0c2d20215b12d0f4e743a4fcce8
+
+aa3ad2f578cd54daceccf6e065ae0af32d7b2173a67b2394d08203c64277dfe3d1778782a7834364a22ad1dc6002d773
+
+ab19bd40525e36bb4e132378e0596f21b32d7455de969862f3a48864eb9e2dd4c1e8bc903ceea686861b1dc0280b0b15
+
+91230b37837e5df457ff32eb129fbc5fd31de7af88cb4263b545f998a23294b073d92458be7639b6c867f4e340c209d5
+
+9594346850ba101da9f94b9856bba3843c959d22e8d6d58c3ad8b25c9a2209945ca73cdf9ce6fd51478ecc1377bdad05
+
+5.2.1.2.  Key Pair
 
    Following the procedure defined in Section 3.3.1 with an input IKM
    value as follows
@@ -934,18 +984,18 @@ Procedure:
 
 8e146f42de0bf1754692788a4692eeed788f9555837fd208bd6d207affc12916fe25615d5afe2e386984dded54b0bd0809a82bfcd93795a85ee00f5857294cc06391fc049d0b7ea4d1d7ce65548199429dbdb0bf0946f6123daf3454c39bcae4
 
-5.2.1.2.  Valid Single Message Signature
+5.2.1.3.  Valid Single Message Signature
 
    Using the following message
 
    9872ad089e452c7b6e283dfac2a80d58e8d0ff71cc4d5e310a1debdda4a45f02
 
-   Along with the SK value as defined in Section 5.2.1.1 as inputs into
+   Along with the SK value as defined in Section 5.2.1.2 as inputs into
    the Sign operations, yields the following output signature
 
 aacb0e0ccc477de9408ec18810b508abccb975e2c8099ea93ba28bf66c836ac31189097446c5c5b67d6aa6aa1a5e01a45d2ee5348010e06d0e9ce7c0737e0e2cd40f270d3fec47e85f6900bce168c0701b87c0afae739823481f3de17823587bec26d5716a3d893a24d996396eca139e
 
-5.2.1.3.  Valid Multi-Message Signature
+5.2.1.4.  Valid Multi-Message Signature
 
    Using the following messages (*Note* the ordering of the messages
    MUST be preserved)
@@ -970,7 +1020,7 @@ aacb0e0ccc477de9408ec18810b508abccb975e2c8099ea93ba28bf66c836ac31189097446c5c5b6
 
 63333434313336643961623032646134646435393038626262613931336165366635386332636338343462383032613666383131663566623037356639623830
 
-   Along with the SK value as defined in Section 5.2.1.1 as inputs into
+   Along with the SK value as defined in Section 5.2.1.2 as inputs into
    the Sign operations, yields the following output signature
 
 89f61a400283385ab6d6233e9a7c4659e1822e280d4b9a0ba9ec867faa59a4ff27f44d956a3f2e297236342d7419a4c758385744297a55459c3a18c5ed76601e0c2226da1a95df39f9be2bbf2311b46859482c85ba0b109d5fa9b7cbaf90f9b8bc78f506666c9e64f14490441669ccc5
@@ -1238,7 +1288,7 @@ A.3.1.  Modified Message Signature
 
 aacb0e0ccc477de9408ec18810b508abccb975e2c8099ea93ba28bf66c836ac31189097446c5c5b67d6aa6aa1a5e01a45d2ee5348010e06d0e9ce7c0737e0e2cd40f270d3fec47e85f6900bce168c0701b87c0afae739823481f3de17823587bec26d5716a3d893a24d996396eca139e
 
-   Along with the PK value as defined in Section 5.2.1.1 as inputs into
+   Along with the PK value as defined in Section 5.2.1.2 as inputs into
    the Verify operation should fail signature validation due to the
    message value being different from what was signed
 
@@ -1254,7 +1304,7 @@ A.3.2.  Extra Unsigned Message Signature
 
 aacb0e0ccc477de9408ec18810b508abccb975e2c8099ea93ba28bf66c836ac31189097446c5c5b67d6aa6aa1a5e01a45d2ee5348010e06d0e9ce7c0737e0e2cd40f270d3fec47e85f6900bce168c0701b87c0afae739823481f3de17823587bec26d5716a3d893a24d996396eca139e
 
-   Along with the PK value as defined in Section 5.2.1.1 as inputs into
+   Along with the PK value as defined in Section 5.2.1.2 as inputs into
    the Verify operation should fail signature validation due to an
    additional message being supplied that was not signed
 
@@ -1270,7 +1320,7 @@ A.3.3.  Missing Message Signature
 
 89f61a400283385ab6d6233e9a7c4659e1822e280d4b9a0ba9ec867faa59a4ff27f44d956a3f2e297236342d7419a4c758385744297a55459c3a18c5ed76601e0c2226da1a95df39f9be2bbf2311b46859482c85ba0b109d5fa9b7cbaf90f9b8bc78f506666c9e64f14490441669ccc5
 
-   Along with the PK value as defined in Section 5.2.1.1 as inputs into
+   Along with the PK value as defined in Section 5.2.1.2 as inputs into
    the Verify operation should fail signature validation due to missing
    messages that were originally present during the signing
 
@@ -1302,7 +1352,7 @@ A.3.4.  Reordered Message Signature
 
 89f61a400283385ab6d6233e9a7c4659e1822e280d4b9a0ba9ec867faa59a4ff27f44d956a3f2e297236342d7419a4c758385744297a55459c3a18c5ed76601e0c2226da1a95df39f9be2bbf2311b46859482c85ba0b109d5fa9b7cbaf90f9b8bc78f506666c9e64f14490441669ccc5
 
-   Along with the PK value as defined in Section 5.2.1.1 as inputs into
+   Along with the PK value as defined in Section 5.2.1.2 as inputs into
    the Verify operation should fail signature validation due to messages
    being re-ordered from the order in which they were signed
 
@@ -1334,7 +1384,7 @@ A.3.5.  Wrong Public Key Signature
 
 89f61a400283385ab6d6233e9a7c4659e1822e280d4b9a0ba9ec867faa59a4ff27f44d956a3f2e297236342d7419a4c758385744297a55459c3a18c5ed76601e0c2226da1a95df39f9be2bbf2311b46859482c85ba0b109d5fa9b7cbaf90f9b8bc78f506666c9e64f14490441669ccc5
 
-   Along with the PK value as defined in Section 5.2.1.1 as inputs into
+   Along with the PK value as defined in Section 5.2.1.2 as inputs into
    the Verify operation should fail signature validation due to public
    key used to verify is in-correct
 
