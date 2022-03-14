@@ -7,7 +7,7 @@ none                                                           M. Lodder
                                                                T. Looker
                                                                    Mattr
                                                             A. Whitehead
-                                                           13 March 2022
+                                                           14 March 2022
 
 
                         The BBS Signature Scheme
@@ -879,8 +879,11 @@ Procedure:
    *  hash_to_field: A function that follows the procedure outlined in
       section 5.3 of [I-D.irtf-cfrg-hash-to-curve]
 
-   *  dst: Domain separation tag used in the hash_to_curve_g1 and
-      hash_to_field operations
+   *  hash_to_curve_g1_dst: Domain separation tag used in the
+      hash_to_curve_g1 operation
+
+   *  hash_to_field_dst: Domain separation tag used in the hash_to_field
+      operation
 
 5.2.  BLS12-381 Ciphersuite
 
@@ -895,11 +898,13 @@ Procedure:
    hash_to_curve_g1  follows the suite defined in Appendix A.1 for the
       G1 subgroup
 
+   hash_to_curve_g1_dst  "BBS_BLS12381G1_XOF:SHAKE-256_SSWU_RO"
+
    hash_to_field  adopts the required parameters from the suites defined
       in Appendix A.1 to satisfy those described in section 5.3
       [I-D.irtf-cfrg-hash-to-curve] along with the defined dst
 
-   dst  "BBS_BLS12381G1_XOF:SHAKE-256_SSWU_RO"
+   hash_to_field_dst  "BBS_BLS12381FQ_XOF:SHAKE-256_SSWU_RO"
 
 5.2.1.  Test Vectors
 

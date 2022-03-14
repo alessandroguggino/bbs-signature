@@ -2074,7 +2074,10 @@ A cryptographic hash function that takes as an arbitrary octet string input and 
             <p id="section-5.1-1.5.1">hash_to_field: A function that follows the procedure outlined in section 5.3 of <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span><a href="#section-5.1-1.5.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-5.1-1.6">
-            <p id="section-5.1-1.6.1">dst: Domain separation tag used in the hash_to_curve_g1 and hash_to_field operations<a href="#section-5.1-1.6.1" class="pilcrow">¶</a></p>
+            <p id="section-5.1-1.6.1">hash_to_curve_g1_dst: Domain separation tag used in the hash_to_curve_g1 operation<a href="#section-5.1-1.6.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-5.1-1.7">
+            <p id="section-5.1-1.7.1">hash_to_field_dst: Domain separation tag used in the hash_to_field operation<a href="#section-5.1-1.7.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 </section>
@@ -2101,12 +2104,16 @@ A cryptographic hash function that takes as an arbitrary octet string input and 
           <dd style="margin-left: 1.5em" id="section-5.2-1.8">follows the suite defined in <a href="#bls12-381-hash-to-curve-definition-using-shake-256" class="xref">Appendix A.1</a> for the G1 subgroup<a href="#section-5.2-1.8" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-5.2-1.9">hash_to_field</dt>
-          <dd style="margin-left: 1.5em" id="section-5.2-1.10">adopts the required parameters from the suites defined in <a href="#bls12-381-hash-to-curve-definition-using-shake-256" class="xref">Appendix A.1</a> to satisfy those described in section 5.3 <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span> along with the defined dst<a href="#section-5.2-1.10" class="pilcrow">¶</a>
+<dt id="section-5.2-1.9">hash_to_curve_g1_dst</dt>
+          <dd style="margin-left: 1.5em" id="section-5.2-1.10">"BBS<em>BLS12381G1</em>XOF:SHAKE-256<em>SSWU</em>RO"<a href="#section-5.2-1.10" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-5.2-1.11">dst</dt>
-          <dd style="margin-left: 1.5em" id="section-5.2-1.12">"BBS<em>BLS12381G1</em>XOF:SHAKE-256<em>SSWU</em>RO"<a href="#section-5.2-1.12" class="pilcrow">¶</a>
+<dt id="section-5.2-1.11">hash_to_field</dt>
+          <dd style="margin-left: 1.5em" id="section-5.2-1.12">adopts the required parameters from the suites defined in <a href="#bls12-381-hash-to-curve-definition-using-shake-256" class="xref">Appendix A.1</a> to satisfy those described in section 5.3 <span>[<a href="#I-D.irtf-cfrg-hash-to-curve" class="xref">I-D.irtf-cfrg-hash-to-curve</a>]</span> along with the defined dst<a href="#section-5.2-1.12" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-5.2-1.13">hash_to_field_dst</dt>
+          <dd style="margin-left: 1.5em" id="section-5.2-1.14">"BBS<em>BLS12381FQ</em>XOF:SHAKE-256<em>SSWU</em>RO"<a href="#section-5.2-1.14" class="pilcrow">¶</a>
 </dd>
         <dd class="break"></dd>
 </dl>
