@@ -876,11 +876,11 @@ Procedure:
       arbitrary octet string input and returns a point in G1 as defined
       in [I-D.irtf-cfrg-hash-to-curve].
 
-   *  hash_to_field: A function that follows the procedure outlined in
-      section 5.3 of [I-D.irtf-cfrg-hash-to-curve]
-
    *  hash_to_curve_g1_dst: Domain separation tag used in the
       hash_to_curve_g1 operation
+
+   *  hash_to_field: A function that follows the procedure outlined in
+      section 5.3 of [I-D.irtf-cfrg-hash-to-curve]
 
    *  hash_to_field_dst: Domain separation tag used in the hash_to_field
       operation
