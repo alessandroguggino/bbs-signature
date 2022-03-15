@@ -7,7 +7,7 @@ none                                                           M. Lodder
                                                                T. Looker
                                                                    Mattr
                                                             A. Whitehead
-                                                           11 March 2022
+                                                           15 March 2022
 
 
                         The BBS Signature Scheme
@@ -54,6 +54,7 @@ Table of Contents
        3.3.6.  SpkGen
        3.3.7.  SpkVerify
        3.3.8.  CreateGenerators
+       3.3.9.  MapMessageToScalar
    4.  Security Considerations
      4.1.  Validating public keys
      4.2.  Skipping membership checks
@@ -711,6 +712,35 @@ Procedure:
 
 3. return generators
 
+3.3.9.  MapMessageToScalar
+
+   There are multiple ways in which messages can be mapped to their
+   respective scalar values, which is their required form to be used
+   with the sign, verify, spkGen and spkVerify operations.
+
+3.3.9.1.  MapMessageToScalarAsHash
+
+   This operation takes an arbitrary message and maps it to a scalar
+   value, by hashing it to a point in the G1 subgroup for the target
+   curve.
+
+result = MapMessageToScalarAsHash(msg, dst)
+
+Inputs:
+
+- msg: octet string.
+- dst: Domain separation tag; Note this is not defined as a function argument as per [@!I-D.irtf-cfrg-hash-to-curve] instead as a parameter
+
+Outputs:
+
+- result: scalar value
+
+Procedure:
+
+1. result = hash_to_field(msg, 1)
+
+2. return result
+
 4.  Security Considerations
 
 4.1.  Validating public keys
@@ -846,7 +876,14 @@ Procedure:
       arbitrary octet string input and returns a point in G1 as defined
       in [I-D.irtf-cfrg-hash-to-curve].
 
-   *  dst: Domain separation tag used in the hash_to_curve_g1 operation
+   *  hash_to_curve_g1_dst: Domain separation tag used in the
+      hash_to_curve_g1 operation
+
+   *  hash_to_field: A cryptographic hash function that follows the
+      procedure outlined in section 5.3 of [I-D.irtf-cfrg-hash-to-curve]
+
+   *  hash_to_field_dst: Domain separation tag used in the hash_to_field
+      operation
 
    *  message_generator_seed: The seed used to generate the message
       generators which form part of the public parameters used by the
@@ -871,7 +908,13 @@ Procedure:
    hash_to_curve_g1  follows the suite defined in Appendix A.1 for the
       G1 subgroup
 
-   dst  "BBS_BLS12381G1_XOF:SHAKE-256_SSWU_RO_"
+   hash_to_curve_g1_dst  "BBS_BLS12381G1_XOF:SHAKE-256_SSWU_RO"
+
+   hash_to_field  adopts the required parameters from the suites defined
+      in Appendix A.1 to satisfy those described in section 5.3
+      [I-D.irtf-cfrg-hash-to-curve] along with the defined dst
+
+   hash_to_field_dst  "BBS_BLS12381FQ_XOF:SHAKE-256_SSWU_RO"
 
    message_generator_seed  A global seed value of
       "BBS_BLS12381G1_XOF:SHAKE-256_SSWU_RO_MESSAGE_GENERATOR_SEED"
