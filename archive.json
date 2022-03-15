@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2022-03-13T00:08:03.971804+00:00",
+  "timestamp": "2022-03-15T00:07:52.884000+00:00",
   "repo": "decentralized-identity/bbs-signature",
   "labels": [
     {
@@ -7617,13 +7617,13 @@
       "labels": [],
       "body": "This PR is primarily designed to help support conversation around design options we have here, it is also an extension of #61 and related to #76.\r\n\r\nCurrently for the core sign, verify, spkGen and spkVerify operations take the inputed messages as a set of octet strings so we either need to.\r\n\r\n1. Clarify that the messages supplied here can be of abitrary value and that MapMessageToScalar becomes an operation executed within sign, verify, spkGen or spkVerify.\r\n2. OR clarify that the messages supplied here have to be valid scalars and that MapMessageToScalar MUST be called on each message prior to calling sign, verify, spkGen or spkVerify.\r\n\r\nThe complexity we are managing is not just that the messages need to be mapped to scalars its also that they could be mapped in multiple ways (e.g message -> scalar as hash or as number) so where ever this definition occurs will also have to account for this optionality (e.g sign would not only take a list of messages to sign but the mapping method for each message)",
       "createdAt": "2022-03-07T00:21:10Z",
-      "updatedAt": "2022-03-12T16:49:06Z",
+      "updatedAt": "2022-03-14T23:54:50Z",
       "baseRepository": "decentralized-identity/bbs-signature",
       "baseRefName": "main",
-      "baseRefOid": "94d8d8ebd3c10e7a8b97f0c9db364941eabfeb16",
+      "baseRefOid": "2a7a5f756d5a4ca8d8d6cc63052277a8afdc2f33",
       "headRepository": "decentralized-identity/bbs-signature",
       "headRefName": "tl/map-message-generators",
-      "headRefOid": "8b7bab6b76ff7bc9c8b23b2e1d471df44ffe874e",
+      "headRefOid": "7a6d75ac11863f7a9c52a478281cb1fb347590c6",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -7642,6 +7642,13 @@
           "body": "PR has been updated to use hash_to_field now",
           "createdAt": "2022-03-11T23:25:56Z",
           "updatedAt": "2022-03-11T23:25:56Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "> Remove the _g1 suffix. Scalars are not part of the g1 subgroup. They are their own field. Scalars can be used in either field to scale g1 or G2 groups.\r\n\r\nAddressed",
+          "createdAt": "2022-03-13T20:08:15Z",
+          "updatedAt": "2022-03-13T20:08:15Z"
         }
       ],
       "reviews": [
@@ -7657,6 +7664,59 @@
           "createdAt": "2022-03-12T16:49:06Z",
           "updatedAt": "2022-03-12T16:49:06Z",
           "comments": []
+        },
+        {
+          "id": "PRR_kwDOF8lax842NcRc",
+          "commit": {
+            "abbreviatedOid": "3006617"
+          },
+          "author": "mikelodder7",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2022-03-14T23:06:41Z",
+          "updatedAt": "2022-03-14T23:06:42Z",
+          "comments": [
+            {
+              "originalPosition": 49,
+              "body": "This should have its own `dst` value different but similar to hash_to_curve_g1. I propose `BBS_BLS12381FQ_XOF:SHAKE-256_SSWU_RO`",
+              "createdAt": "2022-03-14T23:06:42Z",
+              "updatedAt": "2022-03-14T23:06:42Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOF8lax842NcWo",
+          "commit": {
+            "abbreviatedOid": "3006617"
+          },
+          "author": "mikelodder7",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "LGTM except we need a DST for hash_to_field. Good job.",
+          "createdAt": "2022-03-14T23:07:15Z",
+          "updatedAt": "2022-03-14T23:07:15Z",
+          "comments": []
+        },
+        {
+          "id": "PRR_kwDOF8lax842Nh4a",
+          "commit": {
+            "abbreviatedOid": "3006617"
+          },
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2022-03-14T23:50:02Z",
+          "updatedAt": "2022-03-14T23:50:02Z",
+          "comments": [
+            {
+              "originalPosition": 49,
+              "body": "Resolved",
+              "createdAt": "2022-03-14T23:50:02Z",
+              "updatedAt": "2022-03-14T23:50:02Z"
+            }
+          ]
         }
       ]
     },
