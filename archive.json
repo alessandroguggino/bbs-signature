@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2022-03-15T00:07:52.884000+00:00",
+  "timestamp": "2022-03-17T00:07:26.967979+00:00",
   "repo": "decentralized-identity/bbs-signature",
   "labels": [
     {
@@ -2623,6 +2623,156 @@
           "body": "Addressed in #81 ",
           "createdAt": "2022-03-09T00:42:39Z",
           "updatedAt": "2022-03-09T00:42:39Z"
+        }
+      ]
+    },
+    {
+      "number": 85,
+      "id": "I_kwDOF8lax85F0g0F",
+      "title": "Correspondence between proof and public key",
+      "url": "https://github.com/decentralized-identity/bbs-signature/issues/85",
+      "state": "OPEN",
+      "author": "BasileiosKal",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "In general, I was under the impression that a signature can be used to derive proofs that would be validated with only 1 specific key (the issuers PK).\r\n\r\nThat does not seem to be the case. The holder can present proofs for credentials signed from an issuer with public key `PK`, that will be validated with `PK * y = P2 * (x*y)`, where `y` a scalar chosen by the holder. My question is: Is this dangerous?? It is not really a forgery. It may compromise the issuer's and/or holder's accountability though, i.e., an issuer may falsely claim that they never signed a specific credential or a holder that they never possessed (and used to create an spk) a credential signed from that issuer.\r\n\r\nYou can find the detailed mathematics here: https://hackmd.io/@Vasileios/HyuXt_kf9\r\n  and a reproduction here: https://github.com/BasileiosKal/dif-bbs-issue\r\n\r\nIn general the method is the following; Let the holder having the signature `(A, s, e)` on some messages. Let also the holder wanting to create a proof that would be validated with `PK * y` instead of `PK`, for some scalar `y`. During spkGen they will calculate `Abar_f = A\u2019 * y * e + B * r1 * y` and `D_f = B * r1 * y + H0 * r2`. Note that `e(Abar_f, P2) = e(A', PK * y)`. Changing some additional values in the proof, the holder can present the spk; `(A\u2019, Abar_f, D_f, \u2026)` that will be validated with `PK * y`. \r\n\r\nA similar method works with a signature. The holder can present `(A*(y^-1), s, e*y)` which is a valid signature for the key `PK * y` (which is why the above method doesn't go against the security proofs given in the literature, i.e., a bbs proof, proves knowledge of a signature not only from the secret key `x` but also for a signature from the \"secret key\" `y * x`).\r\n\r\nIf a mitigation is needed, maybe including the issuer's PK as one of the signed messages will be an efficient solution, that solves the issuer\u2019s and/or holder\u2019s accountability issue.",
+      "createdAt": "2022-03-16T18:20:35Z",
+      "updatedAt": "2022-03-16T22:46:11Z",
+      "closedAt": null,
+      "comments": [
+        {
+          "author": "mikelodder7",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "The PK is known by the verifier so if the holder does this then it won\u2019t validate properly ",
+          "createdAt": "2022-03-16T18:39:51Z",
+          "updatedAt": "2022-03-16T18:39:51Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "@mikelodder7 that is probably a valid assumption to make in many circumstances, however if it is the position we take, we need to document it in the security considerations. e.g a verifier should be aware when trusting the verifier to supply the public key of the signer to verify that this condition exists.",
+          "createdAt": "2022-03-16T18:45:43Z",
+          "updatedAt": "2022-03-16T18:45:43Z"
+        },
+        {
+          "author": "mikelodder7",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Agreed",
+          "createdAt": "2022-03-16T18:47:40Z",
+          "updatedAt": "2022-03-16T18:47:40Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "The fact this computation on the public key exists without a mitigation also degrades the non-repudiable nature of signatures also (e.g an issuer could use it as a way to say \"i didn't sign the signature used to generate this spk\")",
+          "createdAt": "2022-03-16T18:47:47Z",
+          "updatedAt": "2022-03-16T18:47:47Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "Where a valid mitigation could be @mikelodder7's suggestion above.",
+          "createdAt": "2022-03-16T18:48:16Z",
+          "updatedAt": "2022-03-16T18:48:16Z"
+        },
+        {
+          "author": "BasileiosKal",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "> The PK is known by the verifier so if the holder does this then it won\u2019t validate properly\r\n\r\nAgreed. That is why there is not really a forgery here. However to @tplooker point, it does degrade the non-repudiable property of the protocol. Another example can be that a malicious issuer could claim that they originally signed a specific credential (and that the holder should pay them for that service for example).\r\n\r\nIn general i would be interested if there is also any other way to take advantage of that. Regardless IMO its kinda a weird property (with easy mitigation) that i would expect to not hold though. IMO, protocol designers need to be aware of it, and its possible mitigation, as to not introduce any vulnerabilities because they assumed otherwise.",
+          "createdAt": "2022-03-16T19:20:27Z",
+          "updatedAt": "2022-03-16T19:34:28Z"
+        },
+        {
+          "author": "mikelodder7",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Actually there\u2019s no need for any mitigation here. The technique could apply to ANY signature and public key. If the issuer alters their public key then no signature will verify or proof. The advantage of pairing based signatures is they can actually recover the signature to a working state but ECDSA schnorr and Ed25519 cannot.",
+          "createdAt": "2022-03-16T21:53:04Z",
+          "updatedAt": "2022-03-16T21:53:04Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "I think the threat model here is the holder creates a proof with a `PK = PK * y` and transmits the `PK` to the verifier alongside the spk and the verifier ends up concluding the underlying signature proven by the spk was not signed by the private key associated to `PK` instead of `PK *y`. How does this apply to ECDSA and Ed25519 when they dont feature an spk phase",
+          "createdAt": "2022-03-16T21:59:54Z",
+          "updatedAt": "2022-03-16T21:59:54Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "OR the signer uses the fact that the holder can do this while generating the proof to repudiate (deny) the underlying signature associated to the SPK.",
+          "createdAt": "2022-03-16T22:02:46Z",
+          "updatedAt": "2022-03-16T22:02:46Z"
+        },
+        {
+          "author": "mikelodder7",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "The same problem exists with BLS signatures too. The verifier in ANY case should not get the public key from the holder. The point I\u2019m saying is if the public key changes in any way the other signatures fall apart. The holder isn\u2019t forging a proof here but randomizing it. That\u2019s why There sometimes called randomizable signatures",
+          "createdAt": "2022-03-16T22:02:56Z",
+          "updatedAt": "2022-03-16T22:02:56Z"
+        },
+        {
+          "author": "mikelodder7",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "The signer could do this anyway",
+          "createdAt": "2022-03-16T22:03:35Z",
+          "updatedAt": "2022-03-16T22:03:35Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "Ok so are you saying it would be sufficient to just add something along the lines of \"The verifier in ANY case should not get the public key from the holder\" to the security considerations section?",
+          "createdAt": "2022-03-16T22:05:02Z",
+          "updatedAt": "2022-03-16T22:05:02Z"
+        },
+        {
+          "author": "mikelodder7",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "That\u2019s why holders should call verify whenever they receive a signature regardless of the scheme including Ed25519. That\u2019s just good practice in general ",
+          "createdAt": "2022-03-16T22:05:02Z",
+          "updatedAt": "2022-03-16T22:05:02Z"
+        },
+        {
+          "author": "mikelodder7",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "We could, but to me it\u2019s good practice to never trust the holder. You trust the signer therefore you get the key information from them",
+          "createdAt": "2022-03-16T22:06:43Z",
+          "updatedAt": "2022-03-16T22:06:43Z"
+        },
+        {
+          "author": "BasileiosKal",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "I completely agree that we should never trust the holder however the issue is not about that (after all if the holder is allowed to present whatever pk they want they can just forge whatever credential they choose). The issue has to do with untrusted issuers. The above issue essentially says that there is no way currently to hold accountable an issuer for a credential they signed when it comes to the proofs. This to me seems like it could be a problem in some scenarios (which i don't think its true for other signatures schemes).",
+          "createdAt": "2022-03-16T22:14:51Z",
+          "updatedAt": "2022-03-16T22:14:51Z"
+        },
+        {
+          "author": "mikelodder7",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "But I can do that anyway as a issuer without having to do this method. ",
+          "createdAt": "2022-03-16T22:16:24Z",
+          "updatedAt": "2022-03-16T22:16:24Z"
+        },
+        {
+          "author": "BasileiosKal",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "I don't see how. The signature it self guarantees the non-repudiable property. How could i do the same thing when it comes to a proof (i.e., claim it was from a different pk??)",
+          "createdAt": "2022-03-16T22:22:43Z",
+          "updatedAt": "2022-03-16T22:22:43Z"
+        },
+        {
+          "author": "mikelodder7",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "To hold the issuer accountable requires them to register the key. Otherwise the issuer can just delete the signing key and claim they didn\u2019t create it.",
+          "createdAt": "2022-03-16T22:24:02Z",
+          "updatedAt": "2022-03-16T22:24:02Z"
+        },
+        {
+          "author": "BasileiosKal",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "True, my point though is that they can do that even if they register their key. What if they register their key, use it to sign a credential and then claim they never did sign that credential themselves but it was signed by someone else?? Or what if they register my pk squared to a not so careful CA and claim that they are the ones signing my credentials??  You cant prove them wrong in those cases without a mitigation (It is not only about claiming they never signed something, they can also claim they did sign something they haven't).",
+          "createdAt": "2022-03-16T22:46:11Z",
+          "updatedAt": "2022-03-16T22:46:11Z"
         }
       ]
     }
@@ -7610,24 +7760,26 @@
       "id": "PR_kwDOF8lax840AnFf",
       "title": "Initial attempt to document the MapMessageToScalar function",
       "url": "https://github.com/decentralized-identity/bbs-signature/pull/77",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "tplooker",
       "authorAssociation": "MEMBER",
       "assignees": [],
       "labels": [],
       "body": "This PR is primarily designed to help support conversation around design options we have here, it is also an extension of #61 and related to #76.\r\n\r\nCurrently for the core sign, verify, spkGen and spkVerify operations take the inputed messages as a set of octet strings so we either need to.\r\n\r\n1. Clarify that the messages supplied here can be of abitrary value and that MapMessageToScalar becomes an operation executed within sign, verify, spkGen or spkVerify.\r\n2. OR clarify that the messages supplied here have to be valid scalars and that MapMessageToScalar MUST be called on each message prior to calling sign, verify, spkGen or spkVerify.\r\n\r\nThe complexity we are managing is not just that the messages need to be mapped to scalars its also that they could be mapped in multiple ways (e.g message -> scalar as hash or as number) so where ever this definition occurs will also have to account for this optionality (e.g sign would not only take a list of messages to sign but the mapping method for each message)",
       "createdAt": "2022-03-07T00:21:10Z",
-      "updatedAt": "2022-03-14T23:54:50Z",
+      "updatedAt": "2022-03-15T01:55:17Z",
       "baseRepository": "decentralized-identity/bbs-signature",
       "baseRefName": "main",
       "baseRefOid": "2a7a5f756d5a4ca8d8d6cc63052277a8afdc2f33",
       "headRepository": "decentralized-identity/bbs-signature",
       "headRefName": "tl/map-message-generators",
-      "headRefOid": "7a6d75ac11863f7a9c52a478281cb1fb347590c6",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "ee7808de7d3f93b7441f391195d3ac89a494eb3f",
+      "closedAt": "2022-03-15T01:55:13Z",
+      "mergedAt": "2022-03-15T01:55:12Z",
+      "mergedBy": "tplooker",
+      "mergeCommit": {
+        "oid": "dd367470f08c36a9c8e9e0856d85aac22ac59d97"
+      },
       "comments": [
         {
           "author": "tplooker",
@@ -7649,6 +7801,13 @@
           "body": "> Remove the _g1 suffix. Scalars are not part of the g1 subgroup. They are their own field. Scalars can be used in either field to scale g1 or G2 groups.\r\n\r\nAddressed",
           "createdAt": "2022-03-13T20:08:15Z",
           "updatedAt": "2022-03-13T20:08:15Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "Multiple reviews and approvals, PR open a week, no objections, merging",
+          "createdAt": "2022-03-15T01:55:03Z",
+          "updatedAt": "2022-03-15T01:55:03Z"
         }
       ],
       "reviews": [
@@ -7717,6 +7876,72 @@
               "updatedAt": "2022-03-14T23:50:02Z"
             }
           ]
+        },
+        {
+          "id": "PRR_kwDOF8lax842NlD2",
+          "commit": {
+            "abbreviatedOid": "7a6d75a"
+          },
+          "author": "mikelodder7",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2022-03-15T00:16:59Z",
+          "updatedAt": "2022-03-15T00:16:59Z",
+          "comments": []
+        },
+        {
+          "id": "PRR_kwDOF8lax842NlZN",
+          "commit": {
+            "abbreviatedOid": "7a6d75a"
+          },
+          "author": "andrewwhitehead",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2022-03-15T00:19:53Z",
+          "updatedAt": "2022-03-15T00:19:53Z",
+          "comments": [
+            {
+              "originalPosition": 41,
+              "body": "Maybe \"a cryptographic hash function\" as with hash_to_curve?",
+              "createdAt": "2022-03-15T00:19:53Z",
+              "updatedAt": "2022-03-15T00:19:53Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOF8lax842NtTf",
+          "commit": {
+            "abbreviatedOid": "7a6d75a"
+          },
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2022-03-15T01:30:44Z",
+          "updatedAt": "2022-03-15T01:30:45Z",
+          "comments": [
+            {
+              "originalPosition": 41,
+              "body": "Cool done",
+              "createdAt": "2022-03-15T01:30:45Z",
+              "updatedAt": "2022-03-15T01:30:45Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOF8lax842Nvaj",
+          "commit": {
+            "abbreviatedOid": "ee7808d"
+          },
+          "author": "andrewwhitehead",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2022-03-15T01:49:44Z",
+          "updatedAt": "2022-03-15T01:49:44Z",
+          "comments": []
         }
       ]
     },
@@ -7842,6 +8067,111 @@
           "body": "",
           "createdAt": "2022-03-09T14:50:32Z",
           "updatedAt": "2022-03-09T14:50:32Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 83,
+      "id": "PR_kwDOF8lax840bvO4",
+      "title": "Fixes definition of MapMessageToScalarAsHash",
+      "url": "https://github.com/decentralized-identity/bbs-signature/pull/83",
+      "state": "MERGED",
+      "author": "tplooker",
+      "authorAssociation": "MEMBER",
+      "assignees": [],
+      "labels": [],
+      "body": "Fixes the in-correct definition for this operation introduced in #61 ",
+      "createdAt": "2022-03-15T02:11:26Z",
+      "updatedAt": "2022-03-15T02:31:02Z",
+      "baseRepository": "decentralized-identity/bbs-signature",
+      "baseRefName": "main",
+      "baseRefOid": "dd367470f08c36a9c8e9e0856d85aac22ac59d97",
+      "headRepository": "decentralized-identity/bbs-signature",
+      "headRefName": "tl/fix-map-message-definition",
+      "headRefOid": "7726a4e84d3348de45d9f3cb556d533acba12b2a",
+      "closedAt": "2022-03-15T02:30:59Z",
+      "mergedAt": "2022-03-15T02:30:59Z",
+      "mergedBy": "tplooker",
+      "mergeCommit": {
+        "oid": "096452940e3ca92a07e25d2bac832252efe2814f"
+      },
+      "comments": [
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "Minor tweak to PR 61, purely editorial, approved, merging",
+          "createdAt": "2022-03-15T02:30:55Z",
+          "updatedAt": "2022-03-15T02:30:55Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "PRR_kwDOF8lax842NztK",
+          "commit": {
+            "abbreviatedOid": "7726a4e"
+          },
+          "author": "mikelodder7",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2022-03-15T02:25:29Z",
+          "updatedAt": "2022-03-15T02:25:29Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 84,
+      "id": "PR_kwDOF8lax840b4hN",
+      "title": "Change usages of HASH function to use XOF",
+      "url": "https://github.com/decentralized-identity/bbs-signature/pull/84",
+      "state": "OPEN",
+      "author": "tplooker",
+      "authorAssociation": "MEMBER",
+      "assignees": [],
+      "labels": [],
+      "body": "We currently use a HASH function separate to how we use an XOF function in the KeyGen SpkGen and SpkVerify functions, this provides an updated definition resolving H -> HASH instead of having two notations to describe the same thing AND provides a concrete definition for the BLS12-381 cipher suite including how many bytes we draw for the operations.",
+      "createdAt": "2022-03-15T03:37:28Z",
+      "updatedAt": "2022-03-16T10:40:46Z",
+      "baseRepository": "decentralized-identity/bbs-signature",
+      "baseRefName": "main",
+      "baseRefOid": "096452940e3ca92a07e25d2bac832252efe2814f",
+      "headRepository": "decentralized-identity/bbs-signature",
+      "headRefName": "tl/update-hash-algorithm-definition",
+      "headRefOid": "0667283d9123f94077dec62be55490fe103f2248",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "Please hold on reviewing this PR, I am going to restructure how we use the HASH and XOF functions in the spec.",
+          "createdAt": "2022-03-15T18:44:57Z",
+          "updatedAt": "2022-03-15T18:44:57Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "Have updated this PR to change direction, instead of having both a HASH function and XOF this PR collapses into just using the XOF function.",
+          "createdAt": "2022-03-16T03:08:58Z",
+          "updatedAt": "2022-03-16T03:08:58Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "PRR_kwDOF8lax842Uzgh",
+          "commit": {
+            "abbreviatedOid": "0667283"
+          },
+          "author": "mikelodder7",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "A couple of notes\r\n\r\n- Let\u2019s remove hkdf for the secret key generation since the Xof serves the same purpose and simplifies things.\r\n- There\u2019s no advantage to hashing the salt first. We should just do H = XOF(salt, ikm), okm= H.read(64), sk = okm mod q, if sk=0 read more bytes and reduce again, output sk\r\n- The challenge hash needs to draw 64 bytes and be converted to a scalar to complete the proving protocol. Verify should do the same thing. The reason is the challenge is used to compute the schnorr proofs for the hidden messages.",
+          "createdAt": "2022-03-16T10:40:46Z",
+          "updatedAt": "2022-03-16T10:40:46Z",
           "comments": []
         }
       ]
