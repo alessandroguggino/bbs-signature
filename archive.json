@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2022-03-17T00:07:26.967979+00:00",
+  "timestamp": "2022-03-20T00:07:54.782485+00:00",
   "repo": "decentralized-identity/bbs-signature",
   "labels": [
     {
@@ -8133,7 +8133,7 @@
       "labels": [],
       "body": "We currently use a HASH function separate to how we use an XOF function in the KeyGen SpkGen and SpkVerify functions, this provides an updated definition resolving H -> HASH instead of having two notations to describe the same thing AND provides a concrete definition for the BLS12-381 cipher suite including how many bytes we draw for the operations.",
       "createdAt": "2022-03-15T03:37:28Z",
-      "updatedAt": "2022-03-16T10:40:46Z",
+      "updatedAt": "2022-03-19T23:20:18Z",
       "baseRepository": "decentralized-identity/bbs-signature",
       "baseRefName": "main",
       "baseRefOid": "096452940e3ca92a07e25d2bac832252efe2814f",
@@ -8158,6 +8158,27 @@
           "body": "Have updated this PR to change direction, instead of having both a HASH function and XOF this PR collapses into just using the XOF function.",
           "createdAt": "2022-03-16T03:08:58Z",
           "updatedAt": "2022-03-16T03:08:58Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "Will do, thanks @mikelodder7 ",
+          "createdAt": "2022-03-17T17:56:50Z",
+          "updatedAt": "2022-03-17T17:56:50Z"
+        },
+        {
+          "author": "BasileiosKal",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Should we be drawing different number of bytes depending on the EC used since we mod after?? For example, for [bn462](https://www.ietf.org/archive/id/draft-irtf-cfrg-pairing-friendly-curves-10.html#name-bn-curves-for-the-128-bit-s), should we draw at least 74 bytes for 128 bits of security?? (using [this](https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-14.html#name-security-considerations) method that @mikelodder7 pointed out and/or lemma 6 from [here](https://eprint.iacr.org/2009/050.pdf))",
+          "createdAt": "2022-03-17T20:27:52Z",
+          "updatedAt": "2022-03-17T20:27:52Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "> Should we be drawing different number of bytes depending on the EC used since we mod after?? For example, for [bn462](https://www.ietf.org/archive/id/draft-irtf-cfrg-pairing-friendly-curves-10.html#name-bn-curves-for-the-128-bit-s), should we draw at least 74 bytes for 128 bits of security?? (using [this](https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-14.html#name-security-considerations) method that @mikelodder7 pointed out and/or lemma 6 from [here](https://eprint.iacr.org/2009/050.pdf))\r\n\r\nThanks, @BasileiosKal lets parameterise this in the cipher suite section, can you clarify the need to draw 74 bytes applies when using the BN 462 curve for key gen? Or also the challenge hash?",
+          "createdAt": "2022-03-19T23:20:17Z",
+          "updatedAt": "2022-03-19T23:20:17Z"
         }
       ],
       "reviews": [
@@ -8172,6 +8193,46 @@
           "body": "A couple of notes\r\n\r\n- Let\u2019s remove hkdf for the secret key generation since the Xof serves the same purpose and simplifies things.\r\n- There\u2019s no advantage to hashing the salt first. We should just do H = XOF(salt, ikm), okm= H.read(64), sk = okm mod q, if sk=0 read more bytes and reduce again, output sk\r\n- The challenge hash needs to draw 64 bytes and be converted to a scalar to complete the proving protocol. Verify should do the same thing. The reason is the challenge is used to compute the schnorr proofs for the hidden messages.",
           "createdAt": "2022-03-16T10:40:46Z",
           "updatedAt": "2022-03-16T10:40:46Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 86,
+      "id": "PR_kwDOF8lax840qvRx",
+      "title": "BBS spk security against the issuer",
+      "url": "https://github.com/decentralized-identity/bbs-signature/pull/86",
+      "state": "OPEN",
+      "author": "BasileiosKal",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Closes #75 \r\n\r\nAdding a section to the security considerations to document the fact that a bbs spk is not zero knowledge against the issuer,",
+      "createdAt": "2022-03-18T16:45:46Z",
+      "updatedAt": "2022-03-19T23:17:57Z",
+      "baseRepository": "decentralized-identity/bbs-signature",
+      "baseRefName": "main",
+      "baseRefOid": "096452940e3ca92a07e25d2bac832252efe2814f",
+      "headRepository": "BasileiosKal/bbs-signature",
+      "headRefName": "untrusted-issuers-security",
+      "headRefOid": "6da61caca8044edc97fa2e9fadaff1aa6dafa654",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOF8lax842im8Z",
+          "commit": {
+            "abbreviatedOid": "6da61ca"
+          },
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "state": "APPROVED",
+          "body": "LGTM, thanks!",
+          "createdAt": "2022-03-19T23:17:57Z",
+          "updatedAt": "2022-03-19T23:17:57Z",
           "comments": []
         }
       ]
