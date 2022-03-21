@@ -723,11 +723,14 @@ Procedure:
    This operation takes an input value and maps it to a scalar via a
    cryptographic hash function for the given curve.
 
-result = MapMessageToScalarAsHash(val, dst)
+result = MapMessageToScalarAsHash(val)
 
 Inputs:
 
 - val: octet string.
+
+Parameters:
+
 - dst: Domain separation tag; Note this is not defined as a function argument as per [@!I-D.irtf-cfrg-hash-to-curve] instead as a parameter
 
 Outputs:
