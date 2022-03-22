@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2022-03-20T00:07:54.782485+00:00",
+  "timestamp": "2022-03-22T00:08:28.077273+00:00",
   "repo": "decentralized-identity/bbs-signature",
   "labels": [
     {
@@ -62,6 +62,11 @@
       "name": "dont-merge-yet",
       "description": "",
       "color": "24BAA2"
+    },
+    {
+      "name": "pending-close",
+      "description": "",
+      "color": "829ED9"
     }
   ],
   "issues": [
@@ -70,7 +75,7 @@
       "id": "MDU6SXNzdWU5OTUxOTA5Mzg=",
       "title": "Update specification to document the usage of hash 2 curve draft 6",
       "url": "https://github.com/decentralized-identity/bbs-signature/issues/1",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "tplooker",
       "authorAssociation": "MEMBER",
       "assignees": [],
@@ -79,8 +84,8 @@
       ],
       "body": "Current implementations of BBS signatures are using hash 2 curve draft 6, this should be noted in the document for those wanting to build interoperable implementations as subsequent revisions of the hash 2 curve draft have been breaking.",
       "createdAt": "2021-09-13T18:20:38Z",
-      "updatedAt": "2021-09-13T18:20:54Z",
-      "closedAt": null,
+      "updatedAt": "2022-03-21T02:31:36Z",
+      "closedAt": "2022-03-21T02:31:35Z",
       "comments": [
         {
           "author": "tplooker",
@@ -88,6 +93,13 @@
           "body": "@andrewwhitehead",
           "createdAt": "2021-09-13T18:20:54Z",
           "updatedAt": "2021-09-13T18:20:54Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "Closing this issue as the draft has moved to documenting the most recent version of the signature scheme rather than the current state of implementations",
+          "createdAt": "2022-03-21T02:31:35Z",
+          "updatedAt": "2022-03-21T02:31:35Z"
         }
       ]
     },
@@ -100,12 +112,10 @@
       "author": "tplooker",
       "authorAssociation": "MEMBER",
       "assignees": [],
-      "labels": [
-        "current-signature-specification"
-      ],
+      "labels": [],
       "body": "Within the draft there are several new cryptographic structures that are encoded in binary, their format should be documented to support interoperable implementations, these include\r\n\r\n- ProofOfKnowledge (signature proof)\r\n- Commitment\r\n- Commitment ProofOfKnowledge\r\n- BBS Signature",
       "createdAt": "2021-09-13T18:24:25Z",
-      "updatedAt": "2022-01-26T17:30:04Z",
+      "updatedAt": "2022-03-21T02:37:48Z",
       "closedAt": null,
       "comments": [
         {
@@ -135,6 +145,13 @@
           "body": "I think we will want to reference the [pairing-friendly curves](https://www.ietf.org/archive/id/draft-irtf-cfrg-pairing-friendly-curves-10.html#name-zcash-serialization-format-) RFC at least for BLS12-381. It is supposedly undergoing changes to make the draft more normative (and hopefully move beyond a draft). We would probably want to have each profile specify the binary encoding for scalars and group elements for its related pairing-friendly curve, and then define things like the signature binary format on top of that.",
           "createdAt": "2022-01-26T17:29:42Z",
           "updatedAt": "2022-01-26T17:30:04Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "#66 adds a preliminary serialisation format for the signature, however the proof representation is still un-documented",
+          "createdAt": "2022-03-21T02:37:47Z",
+          "updatedAt": "2022-03-21T02:37:47Z"
         }
       ]
     },
@@ -596,17 +613,17 @@
       "id": "I_kwDOF8lax84_SQWk",
       "title": "Generalize the presentation proof nonce",
       "url": "https://github.com/decentralized-identity/bbs-signature/issues/15",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "christianpaquin",
-      "authorAssociation": "NONE",
+      "authorAssociation": "CONTRIBUTOR",
       "assignees": [],
       "labels": [
         "ready-for-pr"
       ],
       "body": "The spec currently specifies a presentation nonce to prevent replay attack, and recommends it to be a random value. I suggest we had a few details and requirements around nonce generation, to accommodate various scenarios: \r\n - For replay protections, the nonce only need to be unique, so a verifier identifier + timestamp would work (to create proofs non-interactively).\r\n - If the holder keys are held in hardware that the user only has access for a limited period of time, then making the nonce random prevents the user pre-generating proofs to be used later after the authorized period.\r\n - A BBS+ attribute credential can be used to create a digital signature on some data, disclosing a subset of the attributes. In this case, the nonce can be the digest of the signed data.\r\n\r\nI can create a PR with suggested updates.\r\n\r\n",
       "createdAt": "2021-11-23T22:03:26Z",
-      "updatedAt": "2021-12-13T19:42:52Z",
-      "closedAt": null,
+      "updatedAt": "2022-03-21T02:35:17Z",
+      "closedAt": "2022-03-21T02:35:17Z",
       "comments": [
         {
           "author": "BasileiosKal",
@@ -617,7 +634,7 @@
         },
         {
           "author": "christianpaquin",
-          "authorAssociation": "NONE",
+          "authorAssociation": "CONTRIBUTOR",
           "body": "The last point is a different potential use case: digital signature on say, a document, vs. using a BBS+ credential for authn/authz. E.g., Jane is a professional engineer of company A is asked to review and sign off on the design of a project from company B. She does, and uses her work credential with attributes (name, affiliation, level, role, etc.) to sign off the document, and discloses affiliation, level, and role (e.g., \"This was signed by a level 60 engineer from the Cloud group of Company A\"); she does not disclose her name because her company doesn't want the customer to poach their employees. In this case, the challenge `c` is the hash of the document, just like in conventional electronic signatures. There isn't a replay attack in this case; since the attacker would simply present the same signed document with same signature and disclosed attributes.",
           "createdAt": "2021-11-24T21:24:04Z",
           "updatedAt": "2021-11-24T21:24:04Z"
@@ -635,6 +652,13 @@
           "body": "Discussed on work item call on the 15th of Dec, @christianpaquin is going to make a PR to address this issue",
           "createdAt": "2021-12-13T19:42:52Z",
           "updatedAt": "2021-12-13T19:42:52Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "Addressed in PR #55, closing on that basis",
+          "createdAt": "2022-03-21T02:35:17Z",
+          "updatedAt": "2022-03-21T02:35:17Z"
         }
       ]
     },
@@ -1204,7 +1228,7 @@
       "labels": [],
       "body": "This may be defined as a property of the profile along with details of the pairing-friendly curve in use. For BLS curves it probably makes sense to reference the BLS Signatures IETF draft (hopefully that is getting an update?).",
       "createdAt": "2022-01-25T22:23:33Z",
-      "updatedAt": "2022-01-26T09:16:07Z",
+      "updatedAt": "2022-03-21T02:29:16Z",
       "closedAt": null,
       "comments": [
         {
@@ -1220,6 +1244,13 @@
           "body": "In particular this section https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04#section-2.3",
           "createdAt": "2022-01-26T09:16:06Z",
           "updatedAt": "2022-01-26T09:16:06Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "Depending on the outcome of #87 if this is merged then we can close this as the definition for key gen in the spec has diverged from BLS signatures",
+          "createdAt": "2022-03-21T02:29:15Z",
+          "updatedAt": "2022-03-21T02:29:15Z"
         }
       ]
     },
@@ -1704,15 +1735,17 @@
       "id": "I_kwDOF8lax85C0yau",
       "title": "Register algorithms for BBS signatures in JOSE and COSE IANA registry",
       "url": "https://github.com/decentralized-identity/bbs-signature/issues/48",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "tplooker",
       "authorAssociation": "MEMBER",
       "assignees": [],
-      "labels": [],
+      "labels": [
+        "pending-close"
+      ],
       "body": "As raised by @OR13 on a recent PR review we should consider the scope to register the relevant JOSE and COSE algs with the IANA registry as a part of the core draft.",
       "createdAt": "2022-02-01T19:55:28Z",
-      "updatedAt": "2022-02-16T07:54:21Z",
-      "closedAt": null,
+      "updatedAt": "2022-03-21T21:23:04Z",
+      "closedAt": "2022-03-21T21:23:04Z",
       "comments": [
         {
           "author": "OR13",
@@ -1741,6 +1774,41 @@
           "body": "Its worth noting that the current standard JOSE and COSE forms do not support the style of cryptographic representation required by a protocol like BBS Signatures. However [JWP](https://github.com/json-web-proofs/json-web-proofs) is likely to define one that will, so the ability to register suitable algorithms in the IANA registry, in this draft, will likely be dependent on that drafts completion, alternatively another internet draft could be written after this to define the registration.",
           "createdAt": "2022-02-16T07:54:21Z",
           "updatedAt": "2022-02-16T07:54:21Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "Based on the perspective shared above I'm proposing we close this issue on the grounds that it is out of scope for the current drafts to make IANA registrations for specific data representation forms like JOSE and COSE, marking as pending-close on that basis.",
+          "createdAt": "2022-03-21T02:33:59Z",
+          "updatedAt": "2022-03-21T02:33:59Z"
+        },
+        {
+          "author": "OR13",
+          "authorAssociation": "NONE",
+          "body": "@tplooker I mostly care about the `OKP`, `crv`, `alg` side of these registrations.... Are they going to be handled in a different IETF spec? if so, can we link to something before closing this, so future searchers know where to join in / help ?",
+          "createdAt": "2022-03-21T12:50:09Z",
+          "updatedAt": "2022-03-21T12:50:09Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "w.r.t BLS12-381 key representation [this draft](https://tplooker.github.io/draft-looker-cose-bls-key-representations/draft-looker-cose-bls-key-representations.html) is where the definitions for JOSE and COSE iana registrations are mastered.\r\n\r\nw.r.t to the algorithmic registration for BBS in JWP (an extension of JOSE) refer to [here](https://json-web-proofs.github.io/json-web-proofs/draft-jmiller-json-proof-algorithms.txt). No current extension draft for usage of BBS in COSE exists yet.",
+          "createdAt": "2022-03-21T21:20:11Z",
+          "updatedAt": "2022-03-21T21:20:11Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "@OR13 does that help?",
+          "createdAt": "2022-03-21T21:21:36Z",
+          "updatedAt": "2022-03-21T21:21:36Z"
+        },
+        {
+          "author": "OR13",
+          "authorAssociation": "NONE",
+          "body": "- (jwk) https://tplooker.github.io/draft-looker-cose-bls-key-representations/draft-looker-cose-bls-key-representations.html\r\n- (alg) https://json-web-proofs.github.io/json-web-proofs/draft-jmiller-json-proof-algorithms.txt\r\n\r\ngood to close",
+          "createdAt": "2022-03-21T21:22:46Z",
+          "updatedAt": "2022-03-21T21:22:46Z"
         }
       ]
     },
@@ -2324,7 +2392,7 @@
       "id": "I_kwDOF8lax85FEO4w",
       "title": "BBS spk security against an untrusted/compromised issuer",
       "url": "https://github.com/decentralized-identity/bbs-signature/issues/75",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "BasileiosKal",
       "authorAssociation": "CONTRIBUTOR",
       "assignees": [
@@ -2335,8 +2403,8 @@
       ],
       "body": "Let\u2019s say that the issuer gets compromised, i.e., both their secret key `x` and the records with the signatures they signed will become known. Let\u2019s assume a holder has a bbs+ signature `(A, e, s)` from that issuer with `A = B * (1/(e+x))` where `B = P1 + H0*s + H_1*msg_1 + \u2026 + H_L*msg_L`. Any spk will be of the form, `spk = (A', Abar, D, ...)` where \r\n```\r\nA' = A * r1 =  B * r1 * (1/(e+x))\r\n```\r\n and \r\n```\r\nAbar = A' * x =  B * r1 * (x/(e+x))\r\n```\r\nThe values `(B, B*x, A', Abar)` essentially form a DDH tuple, which is easy to solve using pairings. Specifically, it will hold, \r\n```\r\ne(B*x, A\u2019) = e(B*x, B*r1*(1/(e+x))) = e(B, B) ^(r1*(x/(e+x))) = e(B, B*r1*(x/(e+x)))\r\n```\r\nmeaning that,\r\n```\r\ne(B*x, A') = e(B, Abar)\r\n```\r\nSo, if an adversary who knows `x` and `s`, sees (or has already seen) a proof with `A\u2019` and `Abar`, they can just try different messages, construct `B` and check the above equality between the pairings. Since the messages will not be many this is not hard to do and will result in the secret messages of the holder been revealed. \r\n\r\nIf the Issuer is untrusted, they can use the above equation to track the holder by correlating the spk's with specific signatures.\r\n\r\nThis is mitigated a little by using blind or bound signatures. If the commitment is not revealed an adversary will not be able to construct `B` by trying possible hidden messages. However, it is reasonable to assume here that if the issuers secret key and the signatures they signed are revealed so will the commitments (they will be known -and possibly recorded- by the issuer). Furthermore, if the issuer is untrusted. they can still correlate the holder.\r\n\r\nAs a result, the bbs+ proofs are not secure against an untrusted or compromised issuer. This is not that much of an issue and is like what happens in most PKIs but it might be worth documenting it in the security considerations in the spec so we will have an accurate security model.",
       "createdAt": "2022-03-03T18:07:34Z",
-      "updatedAt": "2022-03-06T23:14:26Z",
-      "closedAt": null,
+      "updatedAt": "2022-03-21T21:12:35Z",
+      "closedAt": "2022-03-21T21:12:35Z",
       "comments": [
         {
           "author": "tplooker",
@@ -2372,6 +2440,13 @@
           "body": "I've tagged this issue as ready for PR as it appears we are clear around the resolution which is to add a note to the security considerations section",
           "createdAt": "2022-03-06T23:14:26Z",
           "updatedAt": "2022-03-06T23:14:26Z"
+        },
+        {
+          "author": "andrewwhitehead",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "I'm having trouble seeing what correlation is enabled here.\r\n\r\n    e(B*x, A') = e(B, Abar)\r\n\r\nThis seems self-evident given that `Abar = A'x`, plus you could substitute any point for `B` in the equation and the result would be the same. That said, it did seem to me like there was a problem when this issue was initially filed.",
+          "createdAt": "2022-03-21T20:58:45Z",
+          "updatedAt": "2022-03-21T21:01:25Z"
         }
       ]
     },
@@ -2384,10 +2459,12 @@
       "author": "tplooker",
       "authorAssociation": "MEMBER",
       "assignees": [],
-      "labels": [],
+      "labels": [
+        "ready-for-pr"
+      ],
       "body": "Currently the core sign, verify, spkGen and spkVerify operations are silent on the form the messages take into the algorithm, based on conversations with @mikelodder7 these are most often inputed in the form of scalars as outputed by the MapToScalar function being proposed in #61. We should clarify this further in the spec.",
       "createdAt": "2022-03-06T23:53:49Z",
-      "updatedAt": "2022-03-06T23:53:49Z",
+      "updatedAt": "2022-03-21T02:29:45Z",
       "closedAt": null,
       "comments": []
     },
@@ -2405,7 +2482,7 @@
       ],
       "body": "At the moment within the scope of this specification there are several points of extension, such as\r\n\r\n- How messages are mapped to their appropriate scalar values\r\n- How the generators used to commit each message are created (e.g from a global, issuer specific or signature specific seed)\r\n\r\nMany of these above decisions will be limited or at least formally defined in a concrete [ciphersuite](https://identity.foundation/bbs-signature/draft-bbs-signatures.html#name-bls12-381-ciphersuite) to promote interoperability. However with multiple possible cipher suites overtime that make different choices, how do we ensure that a signature generated under one cipher suite is not confused with one generated under another cipher suite. \r\n\r\nOne proposal to limit the possibility of this occurring is to define that the first message in a BBS signature MUST always be revealed further more this message could contain a range of information OR something more limited like a cipher suite identifier. As raised by @BasileiosKal on the call, putting too much information in this revealed message is likely to create a correlation risk that would erode some of the benefit that BBS signatures provide, so perhaps a better middle ground would be to instead encode the cipher suite identifier (e.g for the current BLS12381 cipher suite in the spec this could be the hash scalar produced from the string `BBS_BLS12381G1_XOF:SHAKE-256`)",
       "createdAt": "2022-03-07T20:29:15Z",
-      "updatedAt": "2022-03-08T02:49:48Z",
+      "updatedAt": "2022-03-21T23:23:51Z",
       "closedAt": null,
       "comments": [
         {
@@ -2498,6 +2575,13 @@
           "body": "To me the proposal is clear, so I will submit a PR to further the conversation",
           "createdAt": "2022-03-08T02:49:48Z",
           "updatedAt": "2022-03-08T02:49:48Z"
+        },
+        {
+          "author": "andrewwhitehead",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "I think it would be better to calculate this domain separation message in the same way as the challenge, using all the parameters that need to be enforced to avoid malleability which aren't going to vary at the time of presentation. This value would likely be cached by the prover. It may or may not be provided by the issuer at the time of issuance, I think generally it would be unless trying to save a minuscule amount of bandwidth. The inputs should include at least:\r\n\r\n- the cipher suite (and by extension the hash function and curve details)\r\n- the issuer's public key (to avoid issues such as #85)\r\n- the number of signed messages\r\n- the generator points used, in a standard order\r\n\r\nNB that the last two are necessary if the generators are not always deterministically generated from the issuer's public key and the number of messages, as they were in the earlier text. This leaves only a few things to hash into the presentation challenge:\r\n\r\n- `A'`, `Abar`, `D`, `C1`, `C2`\r\n- the revealed message values (see #74), including the value of the domain separation message \u2013 and by extension the values above\r\n- the presentation nonce\r\n\r\nThe domain separation message could optionally include a byte string containing application-specific scope information.",
+          "createdAt": "2022-03-21T23:23:51Z",
+          "updatedAt": "2022-03-21T23:23:51Z"
         }
       ]
     },
@@ -6017,21 +6101,21 @@
       "id": "PR_kwDOF8lax84yzKE8",
       "title": "Add message mapping to scalar",
       "url": "https://github.com/decentralized-identity/bbs-signature/pull/61",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "mikelodder7",
       "authorAssociation": "CONTRIBUTOR",
       "assignees": [],
       "labels": [],
       "body": "Adds a section describing how to map messages to a scalar that can be cryptographically signed. ",
       "createdAt": "2022-02-14T16:36:19Z",
-      "updatedAt": "2022-03-11T04:50:39Z",
+      "updatedAt": "2022-03-21T21:11:17Z",
       "baseRepository": "decentralized-identity/bbs-signature",
       "baseRefName": "main",
       "baseRefOid": "68f56263eac415e2dc3e022e60bd1544c0d352eb",
       "headRepository": "decentralized-identity/bbs-signature",
       "headRefName": "ml/message-mapping",
       "headRefOid": "a9376bfb5b68f28ee886e5b69e171196680149da",
-      "closedAt": null,
+      "closedAt": "2022-03-21T21:11:17Z",
       "mergedAt": null,
       "mergedBy": null,
       "mergeCommit": null,
@@ -6105,6 +6189,20 @@
           "body": "I'd like to hold off merging this PR while we discuss a proposal to break each mapping method out like is shown in #77 ",
           "createdAt": "2022-03-11T04:50:38Z",
           "updatedAt": "2022-03-11T04:50:38Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "Discussed on the WG call, going to close this PR in favour of opening seperate ones for each mapping method, if not objection from @mikelodder7 ",
+          "createdAt": "2022-03-21T18:21:38Z",
+          "updatedAt": "2022-03-21T18:21:38Z"
+        },
+        {
+          "author": "mikelodder7",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "> Discussed on the WG call, going to close this PR in favour of opening seperate ones for each mapping method, if not objection from @mikelodder7\r\n\r\n\ud83d\udc4d\ud83c\udffb ",
+          "createdAt": "2022-03-21T18:30:41Z",
+          "updatedAt": "2022-03-21T18:30:41Z"
         }
       ],
       "reviews": [
@@ -8133,7 +8231,7 @@
       "labels": [],
       "body": "We currently use a HASH function separate to how we use an XOF function in the KeyGen SpkGen and SpkVerify functions, this provides an updated definition resolving H -> HASH instead of having two notations to describe the same thing AND provides a concrete definition for the BLS12-381 cipher suite including how many bytes we draw for the operations.",
       "createdAt": "2022-03-15T03:37:28Z",
-      "updatedAt": "2022-03-19T23:20:18Z",
+      "updatedAt": "2022-03-21T02:15:50Z",
       "baseRepository": "decentralized-identity/bbs-signature",
       "baseRefName": "main",
       "baseRefOid": "096452940e3ca92a07e25d2bac832252efe2814f",
@@ -8179,6 +8277,20 @@
           "body": "> Should we be drawing different number of bytes depending on the EC used since we mod after?? For example, for [bn462](https://www.ietf.org/archive/id/draft-irtf-cfrg-pairing-friendly-curves-10.html#name-bn-curves-for-the-128-bit-s), should we draw at least 74 bytes for 128 bits of security?? (using [this](https://www.ietf.org/archive/id/draft-irtf-cfrg-hash-to-curve-14.html#name-security-considerations) method that @mikelodder7 pointed out and/or lemma 6 from [here](https://eprint.iacr.org/2009/050.pdf))\r\n\r\nThanks, @BasileiosKal lets parameterise this in the cipher suite section, can you clarify the need to draw 74 bytes applies when using the BN 462 curve for key gen? Or also the challenge hash?",
           "createdAt": "2022-03-19T23:20:17Z",
           "updatedAt": "2022-03-19T23:20:17Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "I have opened #87 so we can look at what this would look like",
+          "createdAt": "2022-03-21T02:14:06Z",
+          "updatedAt": "2022-03-21T02:14:06Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "> The challenge hash needs to draw 64 bytes and be converted to a scalar to complete the proving protocol. Verify should do the same thing. The reason is the challenge is used to compute the schnorr proofs for the hidden messages.\r\n\r\nOk I will file a seperate PR to make this change",
+          "createdAt": "2022-03-21T02:15:50Z",
+          "updatedAt": "2022-03-21T02:15:50Z"
         }
       ],
       "reviews": [
@@ -8202,25 +8314,35 @@
       "id": "PR_kwDOF8lax840qvRx",
       "title": "BBS spk security against the issuer",
       "url": "https://github.com/decentralized-identity/bbs-signature/pull/86",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "BasileiosKal",
       "authorAssociation": "CONTRIBUTOR",
       "assignees": [],
       "labels": [],
       "body": "Closes #75 \r\n\r\nAdding a section to the security considerations to document the fact that a bbs spk is not zero knowledge against the issuer,",
       "createdAt": "2022-03-18T16:45:46Z",
-      "updatedAt": "2022-03-19T23:17:57Z",
+      "updatedAt": "2022-03-21T21:12:35Z",
       "baseRepository": "decentralized-identity/bbs-signature",
       "baseRefName": "main",
       "baseRefOid": "096452940e3ca92a07e25d2bac832252efe2814f",
       "headRepository": "BasileiosKal/bbs-signature",
       "headRefName": "untrusted-issuers-security",
       "headRefOid": "6da61caca8044edc97fa2e9fadaff1aa6dafa654",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
-      "comments": [],
+      "closedAt": "2022-03-21T21:12:35Z",
+      "mergedAt": "2022-03-21T21:12:35Z",
+      "mergedBy": "tplooker",
+      "mergeCommit": {
+        "oid": "7463c8157db02ea81f63af9e5576f5889fe9b3d9"
+      },
+      "comments": [
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "Multiple approvals, discussed on WG call, purely editorial non-normative content, merging",
+          "createdAt": "2022-03-21T21:12:30Z",
+          "updatedAt": "2022-03-21T21:12:30Z"
+        }
+      ],
       "reviews": [
         {
           "id": "PRR_kwDOF8lax842im8Z",
@@ -8234,8 +8356,85 @@
           "createdAt": "2022-03-19T23:17:57Z",
           "updatedAt": "2022-03-19T23:17:57Z",
           "comments": []
+        },
+        {
+          "id": "PRR_kwDOF8lax842m8UK",
+          "commit": {
+            "abbreviatedOid": "6da61ca"
+          },
+          "author": "quartzjer",
+          "authorAssociation": "NONE",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2022-03-21T18:19:48Z",
+          "updatedAt": "2022-03-21T18:19:48Z",
+          "comments": []
         }
       ]
+    },
+    {
+      "number": 87,
+      "id": "PR_kwDOF8lax840temi",
+      "title": "[PROPOSAL] refactor key generation procedure",
+      "url": "https://github.com/decentralized-identity/bbs-signature/pull/87",
+      "state": "OPEN",
+      "author": "tplooker",
+      "authorAssociation": "MEMBER",
+      "assignees": [],
+      "labels": [
+        "dont-merge-yet"
+      ],
+      "body": "Initial proposal to refactor the key generation procedure to just rely upon the XOF rather than a combination of a HASH function and HKDF inline with @mikelodder7 proposal [here](https://github.com/decentralized-identity/bbs-signature/pull/84#pullrequestreview-911423521)\r\n\r\nOutstanding questions\r\n- Do we want to continue to support key_info in the key generation, this PR has removed it for now, however we can re-add it\r\n- What guidance do we need to add to the cipher suite definition about calculating the appropriate value for this?",
+      "createdAt": "2022-03-21T02:13:33Z",
+      "updatedAt": "2022-03-21T02:13:33Z",
+      "baseRepository": "decentralized-identity/bbs-signature",
+      "baseRefName": "main",
+      "baseRefOid": "c4a214d4aa07535af0c0452173e7e06df9d62012",
+      "headRepository": "decentralized-identity/bbs-signature",
+      "headRefName": "tl/update-key-gen",
+      "headRefOid": "95bd49bca0467fb1dbd5f689b142c4fe2f3f2dc4",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 88,
+      "id": "PR_kwDOF8lax840tf8r",
+      "title": "[PROPOSAL] generalize map message to scalar operation",
+      "url": "https://github.com/decentralized-identity/bbs-signature/pull/88",
+      "state": "OPEN",
+      "author": "tplooker",
+      "authorAssociation": "MEMBER",
+      "assignees": [],
+      "labels": [
+        "dont-merge-yet"
+      ],
+      "body": "Given we use this mapping procedure in the protocol to map values other than messages to scalars, this PR proposes to generalize that operation so we can use it elsewhere (such as for the challenge value as raised by @mikelodder7 [here](https://github.com/decentralized-identity/bbs-signature/pull/84#pullrequestreview-911423521), the alternative way we could do this instead is to use the underlying function of `hash_to_field` in places like this and leave the MapMessageToScalar as is.",
+      "createdAt": "2022-03-21T02:26:35Z",
+      "updatedAt": "2022-03-21T21:30:03Z",
+      "baseRepository": "decentralized-identity/bbs-signature",
+      "baseRefName": "main",
+      "baseRefOid": "c4a214d4aa07535af0c0452173e7e06df9d62012",
+      "headRepository": "decentralized-identity/bbs-signature",
+      "headRefName": "tl/generalize-map-value-to-scalar",
+      "headRefOid": "384b653852d52be7a25fdecc738a2fb243820f8c",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "Discussed on the WG, we are going to instead leave the definition for MapMessageToScalar as is and just use hash_to_field in required places directly. Therefore dis-regard this PR",
+          "createdAt": "2022-03-21T21:30:03Z",
+          "updatedAt": "2022-03-21T21:30:03Z"
+        }
+      ],
+      "reviews": []
     }
   ]
 }
