@@ -7,7 +7,7 @@ none                                                           M. Lodder
                                                                T. Looker
                                                                    Mattr
                                                             A. Whitehead
-                                                           21 March 2022
+                                                           23 March 2022
 
 
                         The BBS Signature Scheme
@@ -64,6 +64,7 @@ Table of Contents
      4.6.  Implementing hash_to_curve_g1
      4.7.  Use of Contexts
      4.8.  Choice of underlying curve
+     4.9.  Security against the signer.
    5.  Ciphersuites
      5.1.  Ciphersuite Format
      5.2.  BLS12-381 Ciphersuite
@@ -334,9 +335,9 @@ Procedure:
 
 2. SK = 0
 
-3. while SK == 0:
+3. h = XOF(salt || IKM)
 
-4.     h = XOF(salt || IKM)
+4. while SK == 0:
 
 5.     OKM = h.read(okm_key_gen_byte_length)
 
@@ -844,6 +845,33 @@ Procedure:
    Section 5 which as a curve currently achieves close to 128-bit
    security.
 
+4.9.  Security against the signer.
+
+   The BBS proof, as returned by spkGen, is a zero-knowledge proof-of-
+   knowledge against an honest verifier.  This guarantees that two
+   different BBS proofs derived from the same signature will be
+   indifferentiable by a verifier (or a coalition of verifiers).  This
+   does not hold against the original signer of the signature, or
+   against a signer/verifier coalition.  Specifically, given a proof
+   derived from a BBS signature, the original signer will be able to
+   match the proof to the signature used to derive it.  As a result, a
+   signer/ verifier coalition could correlate and track the prover.
+   This also means that a verifier could ask the original signer to
+   reveal the messages that the prover choose to keep undisclosed during
+   a proof generation.  Hence, the BBS proof is NOT zero-knowledge
+   against the signer, or against dishonest verifiers cooperating with
+   the signer.
+
+   In applications where zero-knowledge is desired even against the
+   signer, the signer MUST NOT keep a copy of the signatures they issued
+   (at least not of the signed messages and the s value).  This is
+   RECOMMENDED for all applications to alleviate the danger of a leaked
+   signer's key compromising the secrecy of the messages the prover
+   choose to keep un-disclosed during a proof generation, since any
+   adversary in possession of both the secret key of the signer and the
+   value s of the signature could reveal those un-disclosed messages (by
+   calculating B as calculated at step 7 of spkGen).
+
 5.  Ciphersuites
 
    This section defines the format for a BLS ciphersuite.  It also gives
@@ -884,7 +912,8 @@ Procedure:
       specific per signature).  The ciphersuite MUST define this seed OR
       how to compute it as a pre-cursor operations to any others.
 
-   *  okm_key_gen_byte_length:
+   *  okm_key_gen_byte_length: The number of bytes to read from the XOF
+      to be interpreted as the OKM value in key generation
 
 5.2.  BLS12-381 Ciphersuite
 
@@ -911,6 +940,8 @@ Procedure:
       "BBS_BLS12381G1_XOF:SHAKE-256_SSWU_RO_MESSAGE_GENERATOR_SEED"
       which is used by the Section 3.3.8 operation to compute the
       required set of message generators.
+
+   okm_key_gen_byte_length  64
 
 5.2.1.  Test Vectors
 
