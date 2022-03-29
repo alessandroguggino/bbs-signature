@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2022-03-24T00:07:28.933956+00:00",
+  "timestamp": "2022-03-29T00:08:42.962807+00:00",
   "repo": "decentralized-identity/bbs-signature",
   "labels": [
     {
@@ -2496,7 +2496,7 @@
       ],
       "body": "At the moment within the scope of this specification there are several points of extension, such as\r\n\r\n- How messages are mapped to their appropriate scalar values\r\n- How the generators used to commit each message are created (e.g from a global, issuer specific or signature specific seed)\r\n\r\nMany of these above decisions will be limited or at least formally defined in a concrete [ciphersuite](https://identity.foundation/bbs-signature/draft-bbs-signatures.html#name-bls12-381-ciphersuite) to promote interoperability. However with multiple possible cipher suites overtime that make different choices, how do we ensure that a signature generated under one cipher suite is not confused with one generated under another cipher suite. \r\n\r\nOne proposal to limit the possibility of this occurring is to define that the first message in a BBS signature MUST always be revealed further more this message could contain a range of information OR something more limited like a cipher suite identifier. As raised by @BasileiosKal on the call, putting too much information in this revealed message is likely to create a correlation risk that would erode some of the benefit that BBS signatures provide, so perhaps a better middle ground would be to instead encode the cipher suite identifier (e.g for the current BLS12381 cipher suite in the spec this could be the hash scalar produced from the string `BBS_BLS12381G1_XOF:SHAKE-256`)",
       "createdAt": "2022-03-07T20:29:15Z",
-      "updatedAt": "2022-03-22T16:26:08Z",
+      "updatedAt": "2022-03-28T23:47:47Z",
       "closedAt": null,
       "comments": [
         {
@@ -2596,6 +2596,27 @@
           "body": "I think it would be better to calculate this domain separation message in the same way as the challenge, using all the parameters that need to be enforced to avoid malleability which aren't going to vary at the time of presentation. This value would likely be cached by the prover. It may or may not be provided by the issuer at the time of issuance, I think generally it would be unless trying to save a minuscule amount of bandwidth. The inputs should include at least:\r\n\r\n- the cipher suite (and by extension the hash function and curve details)\r\n- the issuer's public key (to avoid issues such as #85)\r\n- the number of signed messages\r\n- the generator points used, in a standard order\r\n\r\nNB that the last two are necessary if the generators are not always deterministically generated from the issuer's public key and the number of messages, as they were in the earlier text. This leaves only a few things to hash into the presentation challenge:\r\n\r\n- `A'`, `Abar`, `D`, `C1`, `C2`\r\n- the revealed message indices and values (see #74), including the value of the domain separation message \u2013 and by extension the values above\r\n- the presentation nonce\r\n\r\nThe domain separation message could optionally include a byte string containing application-specific scope information. This would probably be the place for things like a schema identifier or revocation registry identifier (required-revealed attributes), and could be used to discriminate signatures that are meant to be bound to a specific session (adding a signature nonce).",
           "createdAt": "2022-03-21T23:23:51Z",
           "updatedAt": "2022-03-22T16:26:08Z"
+        },
+        {
+          "author": "BasileiosKal",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Regarding the generators, couldn't the Verifier \"validate\" them using the global seed?? Other than that its a +1 from me.\r\n\r\nAlso I think we must update the blindSignatures extension to accommodate these changes. I imagine that in the extension the number of signed messages etc., will also have to take into consideration the blinded messages and so on.",
+          "createdAt": "2022-03-28T20:51:45Z",
+          "updatedAt": "2022-03-28T20:51:45Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "> Regarding the generators, couldn't the Verifier \"validate\" them using the global seed?? Other than that its a +1 from me.\r\n\r\nThis is a good question to me, if the cipher suite always fully defines the generators then I can see how perhaps this inclusion could be redundant, however if someone were to define a BBS signature cipher suite that uses signature specific, random or issuer specific generators then maybe it becomes useful to have these protected through the integrity of the signature?\r\n\r\n> Also I think we must update the blindSignatures extension to accommodate these changes. I imagine that in the extension the number of signed messages etc., will also have to take into consideration the blinded messages and so on.\r\n\r\n+1 to this too I will open an issue to track more generally that we will need to revise the blind signature extension draft to be consistent with the core draft.",
+          "createdAt": "2022-03-28T21:27:39Z",
+          "updatedAt": "2022-03-28T21:27:52Z"
+        },
+        {
+          "author": "andrewwhitehead",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "It's possible that the generator values could be left out, for now at least I'm erring on the side of caution and adding them.",
+          "createdAt": "2022-03-28T23:47:47Z",
+          "updatedAt": "2022-03-28T23:47:47Z"
         }
       ]
     },
@@ -2887,6 +2908,22 @@
       "body": "Currently in the in spkgen and spkverify operations, the challenge is not appropriately being converted to its scalar representation, this needs to be rectified, issue originally raised during review of #84 [see here](https://github.com/decentralized-identity/bbs-signature/pull/84#pullrequestreview-911423521)",
       "createdAt": "2022-03-22T01:16:33Z",
       "updatedAt": "2022-03-22T01:16:33Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 90,
+      "id": "I_kwDOF8lax85GkqlR",
+      "title": "Updates to blind signature extension draft",
+      "url": "https://github.com/decentralized-identity/bbs-signature/issues/90",
+      "state": "OPEN",
+      "author": "tplooker",
+      "authorAssociation": "MEMBER",
+      "assignees": [],
+      "labels": [],
+      "body": "We made significant progress on the core draft over the past couple of months, which is likely to have created some in-consistencies in how the blind sign draft maps onto it as an extension, this issue is just open to track this work and re-alignment.",
+      "createdAt": "2022-03-28T21:32:13Z",
+      "updatedAt": "2022-03-28T21:32:13Z",
       "closedAt": null,
       "comments": []
     }
