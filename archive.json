@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2022-03-29T00:08:42.962807+00:00",
+  "timestamp": "2022-03-31T00:07:54.478725+00:00",
   "repo": "decentralized-identity/bbs-signature",
   "labels": [
     {
@@ -2496,7 +2496,7 @@
       ],
       "body": "At the moment within the scope of this specification there are several points of extension, such as\r\n\r\n- How messages are mapped to their appropriate scalar values\r\n- How the generators used to commit each message are created (e.g from a global, issuer specific or signature specific seed)\r\n\r\nMany of these above decisions will be limited or at least formally defined in a concrete [ciphersuite](https://identity.foundation/bbs-signature/draft-bbs-signatures.html#name-bls12-381-ciphersuite) to promote interoperability. However with multiple possible cipher suites overtime that make different choices, how do we ensure that a signature generated under one cipher suite is not confused with one generated under another cipher suite. \r\n\r\nOne proposal to limit the possibility of this occurring is to define that the first message in a BBS signature MUST always be revealed further more this message could contain a range of information OR something more limited like a cipher suite identifier. As raised by @BasileiosKal on the call, putting too much information in this revealed message is likely to create a correlation risk that would erode some of the benefit that BBS signatures provide, so perhaps a better middle ground would be to instead encode the cipher suite identifier (e.g for the current BLS12381 cipher suite in the spec this could be the hash scalar produced from the string `BBS_BLS12381G1_XOF:SHAKE-256`)",
       "createdAt": "2022-03-07T20:29:15Z",
-      "updatedAt": "2022-03-28T23:47:47Z",
+      "updatedAt": "2022-03-30T19:09:37Z",
       "closedAt": null,
       "comments": [
         {
@@ -2617,6 +2617,48 @@
           "body": "It's possible that the generator values could be left out, for now at least I'm erring on the side of caution and adding them.",
           "createdAt": "2022-03-28T23:47:47Z",
           "updatedAt": "2022-03-28T23:47:47Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "> It's possible that the generator values could be left out, for now at least I'm erring on the side of caution and adding them.\r\n\r\nCould you elaborate on the potential concern here?",
+          "createdAt": "2022-03-29T00:29:33Z",
+          "updatedAt": "2022-03-29T00:29:33Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "> This is a good question to me, if the cipher suite always fully defines the generators then I can see how perhaps this inclusion could be redundant, however if someone were to define a BBS signature cipher suite that uses signature specific, random or issuer specific generators then maybe it becomes useful to have these protected through the integrity of the signature?\r\n\r\nJust another thought here, maybe what is actually featured in this message is the cipher suite id + an additional data structure, where the structure and contents of which is dictated by the cipher suite itself? So for ciphersuites like the current one in the spec we dont have to include all the generators because they are fixed (e.g derived from a global seed) whereas another ciphersuite would be free to include them in the additional data structure if they saw benefit?",
+          "createdAt": "2022-03-29T02:49:32Z",
+          "updatedAt": "2022-03-29T02:49:32Z"
+        },
+        {
+          "author": "tplooker",
+          "authorAssociation": "MEMBER",
+          "body": "So for example for the [current ciphersuite](https://identity.foundation/bbs-signature/draft-bbs-signatures.html#name-bls12-381-ciphersuite) we could define that the additional data structure just contains the public key and number of signed messages.",
+          "createdAt": "2022-03-29T02:50:42Z",
+          "updatedAt": "2022-03-29T02:50:42Z"
+        },
+        {
+          "author": "BasileiosKal",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "It may be a little confusing as to why we allow generators to be included in the additional data structure (if we document the possibility somehow) since we don't allow ciphersuits to define their own generators. This is also related with the discussion in #68, but even if we allow ciphersuits to define the generators seed, it will be no different from the situation with the current ciphersuits (i.e., the validity of the generators could be derived from that seed). \r\n\r\nAlso it may be hard to define in the ciphersuits which generators to add to the \"signature domain separation\" since their exact number will most likely not be known. In contrast, at signing time, the issuer will know exactly which generators they will use. As an alternative we could perhaps add the seed value.\r\n\r\n> It's possible that the generator values could be left out, for now at least I'm erring on the side of caution and adding them.\r\n\r\nI imagine It is more secure since the verifier will be \"forced\" to \"check\" the correctness of the generators every time, otherwise it will be left on the verifier to do the check if they want to. I'm not opposed to that, since i don't imaging it will raise complexity, though i don't see the requirement changing if the generators are derived from the issuers pk, or a specific requirement to do so now.",
+          "createdAt": "2022-03-29T18:54:21Z",
+          "updatedAt": "2022-03-29T18:54:21Z"
+        },
+        {
+          "author": "andrewwhitehead",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "If the generators depend only on the seed value, then yes we can hash that instead and be more efficient. Maybe we should add security guidelines for ciphersuites to ensure agreement over the generators in the event that they do use a custom setup procedure.",
+          "createdAt": "2022-03-30T18:44:41Z",
+          "updatedAt": "2022-03-30T18:44:41Z"
+        },
+        {
+          "author": "BasileiosKal",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Agreed. IMO we should make the generators only depend on a seed (which could also be the signers pk). Ciphersuites could define their own seeds if they want to. I don't really see a requirement to allow ciphersuites to define their own generators all together, which is also less secure. That said we should also define the security requirements of the generators, even if we only allow ciphersuit specific seeds.",
+          "createdAt": "2022-03-30T19:09:37Z",
+          "updatedAt": "2022-03-30T19:09:37Z"
         }
       ]
     },
@@ -8551,6 +8593,72 @@
           "updatedAt": "2022-03-22T01:17:25Z"
         }
       ],
+      "reviews": []
+    },
+    {
+      "number": 91,
+      "id": "PR_kwDOF8lax841VRk1",
+      "title": "Updating the spk security consideration",
+      "url": "https://github.com/decentralized-identity/bbs-signature/pull/91",
+      "state": "OPEN",
+      "author": "BasileiosKal",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Updating and re-closing issue #75 \r\n\r\nBased on the discussion in the above issue, the method originally proposed was wrong and any other method does not work on type 3 pairings. Updating the section accordingly.\r\n",
+      "createdAt": "2022-03-30T18:32:28Z",
+      "updatedAt": "2022-03-30T18:39:38Z",
+      "baseRepository": "decentralized-identity/bbs-signature",
+      "baseRefName": "main",
+      "baseRefOid": "bef218f8eab3d0ff830bda5238cc1d85f2bed077",
+      "headRepository": "BasileiosKal/bbs-signature",
+      "headRefName": "issue-75",
+      "headRefOid": "2e27cc2b576f6b6e197ecd59e3e3bcf4b92b126a",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOF8lax843OjOx",
+          "commit": {
+            "abbreviatedOid": "2e27cc2"
+          },
+          "author": "andrewwhitehead",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2022-03-30T18:39:38Z",
+          "updatedAt": "2022-03-30T18:39:38Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 92,
+      "id": "PR_kwDOF8lax841VX2u",
+      "title": "Collapsing random element generation",
+      "url": "https://github.com/decentralized-identity/bbs-signature/pull/92",
+      "state": "OPEN",
+      "author": "BasileiosKal",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "A suggestion to group together some of the random element generation, to make the displayed algorithms a little smaller. This is just for readability and displaying purposes.",
+      "createdAt": "2022-03-30T18:57:34Z",
+      "updatedAt": "2022-03-30T18:57:34Z",
+      "baseRepository": "decentralized-identity/bbs-signature",
+      "baseRefName": "main",
+      "baseRefOid": "bef218f8eab3d0ff830bda5238cc1d85f2bed077",
+      "headRepository": "BasileiosKal/bbs-signature",
+      "headRefName": "notation-update",
+      "headRefOid": "6111fbd813775998b00b65a3c0cbd6b3846114fb",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
       "reviews": []
     }
   ]
