@@ -7,7 +7,7 @@ none                                                           M. Lodder
                                                                T. Looker
                                                                    Mattr
                                                             A. Whitehead
-                                                        23 February 2022
+                                                           31 March 2022
 
 
                         The BBS Signature Scheme
@@ -19,12 +19,12 @@ Abstract
    group signature that supports several novel properties.  Notably, the
    scheme supports signing multiple messages whilst producing a single
    output digital signature.  Through this capability, the possessor of
-   a signature is able to derive proofs that selectively reveal subsets
-   of the originally signed set of messages, whilst preserving the
-   verifiable authenticity and integrity of the messages.  Furthermore,
-   these derived proofs are said to be zero-knowledge in nature as they
-   do not reveal the underlying signature; instead, what they reveal is
-   a proof of knowledge of the undisclosed signature.
+   a signature is able to derive proofs that selectively disclose
+   subsets of the originally signed set of messages, whilst preserving
+   the verifiable authenticity and integrity of the messages.
+   Furthermore, these derived proofs are said to be zero-knowledge in
+   nature as they do not reveal the underlying signature; instead, what
+   they reveal is a proof of knowledge of the undisclosed signature.
 
 Discussion Venues
 
@@ -44,6 +44,7 @@ Table of Contents
      3.1.  Parameters
      3.2.  Considerations
        3.2.1.  Subgroup Selection
+       3.2.2.  Messages and generators
      3.3.  Operations
        3.3.1.  KeyGen
        3.3.2.  SkToPk
@@ -52,15 +53,18 @@ Table of Contents
        3.3.5.  Verify
        3.3.6.  SpkGen
        3.3.7.  SpkVerify
+       3.3.8.  CreateGenerators
+       3.3.9.  MapMessageToScalar
    4.  Security Considerations
      4.1.  Validating public keys
      4.2.  Skipping membership checks
      4.3.  Side channel attacks
      4.4.  Randomness considerations
      4.5.  Presentation message selection
-     4.6.  Implementing hash_to_point_g1 and hash_to_point_g2
+     4.6.  Implementing hash_to_curve_g1
      4.7.  Use of Contexts
      4.8.  Choice of underlying curve
+     4.9.  Security against the signer.
    5.  Ciphersuites
      5.1.  Ciphersuite Format
      5.2.  BLS12-381 Ciphersuite
@@ -69,18 +73,21 @@ Table of Contents
    7.  Normative References
    8.  Informative References
    Appendix A.  Appendix
-     A.1.  Usecases
-       A.1.1.  Non-correlating Security Token
-       A.1.2.  Improved Bearer Security Token
-       A.1.3.  Hardware Attestations
-       A.1.4.  Selectively Disclosure Enabled Identity Assertions
-       A.1.5.  Privacy preserving bound signatures
-     A.2.  Additional BLS12-381 Ciphersuite Test Vectors
-       A.2.1.  Modified Message Signature
-       A.2.2.  Extra Unsigned Message Signature
-       A.2.3.  Missing Message Signature
-       A.2.4.  Reordered Message Signature
-       A.2.5.  Wrong Public Key Signature
+     A.1.  BLS12-381 hash_to_curve definition using SHAKE-256
+       A.1.1.  BLS12-381 G1
+       A.1.2.  BLS12-381 G2
+     A.2.  Usecases
+       A.2.1.  Non-correlating Security Token
+       A.2.2.  Improved Bearer Security Token
+       A.2.3.  Hardware Attestations
+       A.2.4.  Selectively Disclosure Enabled Identity Assertions
+       A.2.5.  Privacy preserving bound signatures
+     A.3.  Additional BLS12-381 Ciphersuite Test Vectors
+       A.3.1.  Modified Message Signature
+       A.3.2.  Extra Unsigned Message Signature
+       A.3.3.  Missing Message Signature
+       A.3.4.  Reordered Message Signature
+       A.3.5.  Wrong Public Key Signature
    Authors' Addresses
 
 1.  Introduction
@@ -97,18 +104,45 @@ Table of Contents
    signature and the entire message to be disclosed during verification,
    constraining its usage in certain applications.
 
-   The BBS Signature scheme on the other hand allows a party to sign
-   multiple messages and produce a single output signature.This then
-   allows the possessor a signature to derive proofs from it that
-   selectively reveal from the originally signed set of messages, whilst
-   continuing to retain the underlying core properties of a digital
-   signature which are verifiable authenticity and integrity of the
-   revealed messages back to the original signer.  Futhermore these
-   derived proofs are said to be zero-knowledge in nature as they do not
-   reveal the underlying signature, instead the generated proof is
-   considered a proof of knowledge of the signature which is beneficial
-   for applications where revealing the underlying signature can cause
-   undesirable correlation.
+   The BBS Signature scheme provides many new properties however two
+   ones are
+
+   *Selective Disclosure* - The scheme allows a signer to sign multiple
+   payloads while still produce a single output signature.  An
+   intermediary then possessing the payloads and the signature can
+   generate a proof whereby they can choose which payloads to reveal.
+
+   *Un-linkable Presentations* - The proofs generated by the scheme are
+   known as a signature proof of knowledge meaning a verifying party in
+   receipt of a proof is unable to determine which signature was used to
+   generate the proof.
+
+   Refer to Appendix A.2 for an elaboration on where and when these
+   properties are useful
+
+   Below is a basic diagram describing the main entities involved in
+   using the scheme
+
+     (1) sign                                       (3) spkGen                                        (5) spkVerify
+     +-----                                         +-----                                               +-----
+     |    |                                         |    |                                               |    |
+     |    |                                         |    |                                               |    |
+     |   \ /                                        |   \ /                                              |   \ /
+   +----------+                                   +-----------+                                        +-----------+
+   |          |                                   |           |                                        |           |
+   |          |                                   |           |                                        |           |
+   |          |                                   |           |                                        |           |
+   |  Signer  |---(2)* Send signature + msgs----->|  Holder/  |---(4)* Send proof + revealed msgs----->| Verifier  |
+   |          |                                   |  Prover   |                                        |           |
+   |          |                                   |           |                                        |           |
+   |          |                                   |           |                                        |           |
+   +----------+                                   +-----------+                                        +-----------+
+
+      Figure 1: Basic diagram capturing the main entities involved in
+                              using the scheme
+
+   *Note* The protocols implied by the items annotated by an asterisk
+   are out of scope for this specification
 
 1.1.  Terminology
 
@@ -127,6 +161,9 @@ Table of Contents
       of knowledge.
 
    msg  An input message to be signed by the signature scheme.
+
+   generator  A valid point on the selected sub-group of the curve being
+      used that is used to commit a value.
 
    H[i]  The generator corresponding to a given msg.
 
@@ -158,6 +195,12 @@ Table of Contents
 
    a || b  Denotes the concatenation of octet strings a and b.
 
+   I J  For sets I and J, denotes the difference of the two sets i.e.,
+      all the elements of I that do not appear in J, in the same order
+      as they were in I.
+
+   [n]: Denotes all integers from 1 to n.
+
    Terms specific to pairing-friendly elliptic curves that are relevant
    to this document are restated below, originally defined in
    [I-D.irtf-cfrg-pairing-friendly-curves]
@@ -181,21 +224,12 @@ Table of Contents
       scalar multiplication.  Operations in GT are written in
       multiplicative notation, i.e., a * b is field multiplication.
 
-   hash_to_curve_g1(ostr) -> P  The cryptographic hash function that
-      takes as an arbitrary octet string input and returns a point in G1
-      as defined in [I-D.irtf-cfrg-hash-to-curve].  The algorithm first
-      requires selection of the pairing friendly curve and digest
-      algorithm, once selected apply the isogeny simplified SWU map to
-      compute a point in G1 using the random oracle method.  The domain
-      separation tag value is dst.
+   Identity_G1, Identity_G1  The identity element for the G1 and G2
+      subgroups respectively.
 
-   hash_to_curve_g2(ostr) -> P  The cryptographic hash function that
-      takes as an arbitrary octet string input and returns a point in G2
-      as defined in [I-D.irtf-cfrg-hash-to-curve].  The algorithm first
-      requires selection of the pairing friendly curve and digest
-      algorithm, once selected the isogeny simplified SWU map to compute
-      a point in G2 using the random oracle method.  The domain
-      separation tag value is dst.
+   hash_to_curve_g1(ostr) -> P  A cryptographic hash function that takes
+      as an arbitrary octet string input and returns a point in G1 as
+      defined in [I-D.irtf-cfrg-hash-to-curve].
 
    point_to_octets(P) -> ostr  returns the canonical representation of
       the point P as an octet string.  This operation is also known as
@@ -271,6 +305,21 @@ Table of Contents
    proof generation being computational in-efficient when performed in
    G2 and in the pursuit of simplicity, the scheme is limited to a
    construction where public keys are in G2 and signatures in G1.
+
+3.2.2.  Messages and generators
+
+   Throughout the operations of this signature scheme, each message that
+   is signed is paired with a specific generator (point in G1).
+   Specifically, if a generator H_1 is raised to the power of msg_1
+   during signing, then H_1 should be raised to the power of msg_1 in
+   all other operations as well (signature verification, proof
+   generation and proof verification).  For simplicity, each function
+   will take as input the list of generators to be used with the
+   messages.  Those generators can be any distinct element from the
+   generators list H.  Applications for efficiency can elect to pass the
+   indexes of those generators to the list H instead.  Care must be
+   taken for the correct generator to be raised to the correct message
+   in that case.
 
 3.3.  Operations
 
@@ -378,7 +427,7 @@ Procedure:
 
    1. (W, H0, H) = octets_to_point(PK)
 
-   2. If W is the identity element, return INVALID
+   2. If W == Identity_G2, return INVALID
 
    3. result = subgroup_check(W) && subgroup_check(H0)
 
@@ -393,11 +442,12 @@ Procedure:
    XOF can be replaced with a PRF due to the insecurity of deterministic
    threshold signing.
 
-   signature = Sign((msg[i],...,msg[L]), SK, PK)
+   signature = Sign(SK, PK, (msg_1,..., msg_L), (H_1,..., H_L))
 
    Inputs:
 
-   - msg[i],...,msg[L], octet strings
+   - msg_1,...,msg_L, octet strings. Messages to be signed.
+   - H_1,..., H_L, points of G1. Generators used to sign the messages.
    - SK, a secret key output from KeyGen
    - PK, a public key output from SkToPk
 
@@ -419,7 +469,7 @@ Procedure:
 
    6. s = OS2IP(r) mod q. If s = 0, go back to step 5.
 
-   7. B = P1 + H0 * s + H[i] * msg[i] + ... + H[n] * msg[L]
+   7. B = P1 + H0 * s + H_1 * msg_1 + ... + H_L * msg_L
 
    8. A = B * (1 / (SK + e))
 
@@ -432,11 +482,12 @@ Procedure:
    Verify checks that a signature is valid for the octet string messages
    under the public key.
 
-result = Verify((msg[i],...,msg[L]), signature, PK)
+result = Verify(PK, (msg_1,..., msg_L), (H_1,..., H_L), signature)
 
 Inputs:
 
-- msg[i],...,msg[L], octet strings.
+- msg_1,..., msg_L, octet strings. Messages in input to Sign.
+- H_1,..., H_L, points of G1. The generators in input to Sign.
 - signature, octet string.
 - PK, a public key in the format output by SkToPk.
 
@@ -454,7 +505,7 @@ Procedure:
 
 4. if KeyValidate(pub_key) is INVALID
 
-5. B = P1 + H0 * s + H[i] * msg[i] + ... + H[n] * msg[L]
+5. B = P1 + H0 * s + H_1 * msg_1 + ... + H_L * msg_L
 
 6. C1 = e(A, W + P2 * e)
 
@@ -470,13 +521,18 @@ Procedure:
    vector of indices of the revealed messages, the signer's public key,
    and a presentation message.
 
-spk = SpkGen(PK, (msg[1],...,msg[L]), RIdxs, signature, pm)
+   If an application chooses to pass the indexes of the generators
+   instead, then it will also need to pass the indexes of the generators
+   corresponding to the revealed messages.
+
+spk = SpkGen(PK, (msg_1,..., msg_L), (H_1,..., H_L), RevealedIndexes, signature, pm)
 
 Inputs:
 
 - PK, octet string in output form from SkToPk
-- (msg[1],...,msg[L]), octet strings (messages in input to Sign).
-- RIdxs, vector of unsigned integers (indices of revealed messages).
+- msg_1,..., msg_L, octet strings. Messages in input to Sign.
+- H_1,..., H_L, points of G1. The generators in input to Sign.
+- RevealedIndexes, vector of unsigned integers. Indexes of revealed messages.
 - signature, octet string in output form from Sign
 - pm, octet string
 
@@ -488,15 +544,15 @@ Procedure:
 
 1. (A, e, s) = (octets_to_point(signature.A), OS2IP(signature.e), OS2IP(signature.s))
 
-2. (W, H0, H[1],...,H[L]) = PK
+2. (i1, i2,..., iR) = RevealedIndexes
 
-3. (i1, i2,..., iR) = RIdxs
+3. (j1, j2,..., jU) = [L] \ RevealedIndexes
 
 4. if subgroup_check(A) is INVALID abort
 
 5. if KeyValidate(PK) is INVALID abort
 
-6. B = P1 + H0 * s + H[1] * msg[1] + ... + H[L] * msg[L]
+6. b = P1 + H0 * s + H_1 * msg_1 + ... + H_L * msg_L
 
 7. r1 = HASH(PRF(8*ceil(log2(q)))) mod q
 
@@ -512,7 +568,7 @@ Procedure:
 
 13. r3 = r1 ^ -1 mod q
 
-14. for i in RIdxs m~[i] = HASH(PRF(8*ceil(log2(q)))) mod q
+14. for j in (j1, j2,..., jU): m~_j = HASH(PRF(8*ceil(log2(q)))) mod q
 
 15. A' = A * r1
 
@@ -524,7 +580,7 @@ Procedure:
 
 19. C1 = A' * e~ + H0 * r2~
 
-20. C2 = D * -r3~ + H0 * s~ + H[i1] * m~[i1] + ... + H[iR] * m~[iR]
+20. C2 = D * (-r3~) + H0 * s~ + H_j1 * m~_j1 + ... + H_jU * m~_jU
 
 21. c = HASH(PK || Abar || A' || D || C1 || C2 || pm)
 
@@ -536,16 +592,11 @@ Procedure:
 
 25. s^ = s~ + c * s'
 
-26. for i in RIdxs: m^[i] = m~[i] + c * msg[i]
+26. for j in (j1, j2,..., jU): m^_j = m~_j + c * msg_j
 
-27. spk = ( A', Abar, D, c, e^, r2^, r3^, s^, (m^[i1], ..., m^[iR]) )
+27. spk = ( A', Abar, D, c, e^, r2^, r3^, s^, (m^_j1, ..., m^_jU))
 
 28. return spk
-
-   How a signature is to be encoded is not covered by this document.
-   (TODO perhaps add some additional information in the appendix)
-   (FIXME: Encoding out of scope OK, but wire format is required for
-   test vectors.  Unless this document is not normative.)
 
 3.3.6.1.  Algorithmic Explanation
 
@@ -564,12 +615,12 @@ Procedure:
    (i.e., (j1,...,jU) = [L] \ (i1,...,iR)).  To prove knowledge of a
    signature on the disclosed messages, work as follows,
 
-   Randomize the signature (A, e, s), by taking uniformly random r1, r2
-   in [1, r-1], and calculate,
+   *  Randomize the signature (A, e, s), by taking uniformly random r1,
+      r2 in [1, q-1], and calculate,
 
-       1.  A' = A * r1,
-       2.  Abar = A' * (-e) + B * r1
-       3.  D = B * r1 + h0 * r2.
+      1.  A' = A * r1,
+      2.  Abar = A' * (-e) + B * r1
+      3.  D = B * r1 + H0 * r2.
 
    Also set,
 
@@ -583,28 +634,18 @@ Procedure:
    Pk, see SkToPk (#sktopk)).  This also serves to bind the spk to the
    signer's Pk.
 
-   Also set,
+   *  Set the following,
 
-    1.  C1 = Abar - D
-    2.  C2 = P1 +  h[i1] * msg_i1 + ... + h[iR] * msg_iR
-
-Create a non-interactive zero-knowledge generalized Schnorr proof of knowledge (`nizk`) of the values `e, r2, r3, s'` and `msg_j1,...,msg_jU` (the undisclosed messages) so that both of the following equalities hold,
-
-    EQ1.  C1 = A' * (-e) + h0 * r2
-    EQ2.  C2 = D * (-r3) + h0 * s' + h[j1] * msg_j1 + ... + h[jU] * msg_jU.
-
-   Set the following,
-
-   1.  T1 = Abar - d
-   2.  T2 = P1 +  h[i1] * msg_i1 + ... + h[iR] * msg_iR
+      1.  C1 = Abar - D
+      2.  C2 = P1 +  H_i1 * msg_i1 + ... + H_iR * msg_iR
 
    Create a non-interactive zero-knowledge generalized Schnorr proof of
    knowledge (nizk) of the values e, r2, r3, s' and msg_j1,...,msg_jU
    (the undisclosed messages) so that both of the following equalities
    hold,
 
- EQ1.  T1 = A' * (-e) + h0 * r2
- EQ2.  T2 = d * r3 + h0 * (-s') + h[j1] * msg_j1 + ... + h[jU] * msg_jU.
+    EQ1.  C1 = A' * (-e) - H0 * r2
+    EQ2.  C2 = D * (-r3) + H0 * s' + H_j1 * msg_j1 + ... + H_jU * msg_jU.
 
    If both EQ1 and EQ2 hold, and e(A', Pk) = e(Abar, P2), an extractor
    can return a valid BBS signature from the signers Sk, on the
@@ -619,14 +660,15 @@ Create a non-interactive zero-knowledge generalized Schnorr proof of knowledge (
    vector with the indices of these revealed messages, and the
    presentation message used in SpkGen.
 
-result = SpkVerify(spk, PK, (Rmsg[1],..., Rmsg[R]), RIdxs, pm)
+result = SpkVerify(spk, PK, (msg_i1,..., msg_iR), (H_1,..., H_L), RevealedIndexes, pm)
 
 Inputs:
 
 - spk, octet string.
 - PK, octet string in output form from SkToPk.
-- (Rmsg[1], ..., Rmsg[R]), octet strings (revealed messages).
-- RIdxs, vector of unsigned integers (indices of revealed messages).
+- msg_i1,..., msg_iR, octet strings. The revealed messages in input to spkGen.
+- H_1,..., H_L, points of G1. The generators in input to Sign.
+- RevealedIndexes, vector of unsigned integers. Indexes of revealed messages.
 - pm, octet string
 
 Outputs:
@@ -637,17 +679,17 @@ Procedure:
 
 1. if KeyValidate(PK) is INVALID
 
-2. (i1, i2, ..., iR) = RIndxs
+2. (i1, i2, ..., iR) = RevealedIndexes
 
-3. (A', Abar, D, c, e^, r2^, r3^, s^, (m^[i1],...,m^[iR])) = spk
+3. (j1, j2, ..., jU) = [L]\RevealedIndexes
 
-4. (W, H0, H[1],...,H[L]) = PK
+4. (A', Abar, D, c, e^, r2^, r3^, s^, (m^_j1,...,m^_jU)) = spk
 
 5. C1 = (Abar - D) * c + A' * e^ + H0 * r2^
 
-6. T = P1 + H[i1] * Rmsg[i1] + ... H[iR] * Rmsg[R]
+6. T = P1 + H_i1 * msg_i1 + ... H_iR * msg_iR
 
-7. C2 = T * c + D * (-r3^) + H0 * s^ + H[i1] * m^[i1] + ... + H[iR] * m^[iR]
+7. C2 = T * c + D * (-r3^) + H0 * s^ + H_j1 * m^_j1 + ... + H_jU * m^_jU
 
 8. cv = HASH(PK || Abar || A' || D || C1 || C2 || pm)
 
@@ -658,6 +700,73 @@ Procedure:
 11. if e(A', W) * e(Abar, -P2) != 1 return INVALID
 
 12. return VALID
+
+3.3.8.  CreateGenerators
+
+   The CreateGenerators operation defines how to create a set of
+   generators that form a part of the public parameters used by the BBS
+   Signature scheme to accomplish operations such as sign, verify,
+   spkgen and spkverify.
+
+   _Note_ The scope in which the seed used below is determined, is still
+   an active conversation in the working group see Section 5 for the
+   current method being used.
+
+generators = CreateGenerators(dst, message_generator_seed, length);
+
+Inputs:
+
+dst, octet string - Domain Separation Tag
+message_generator_seed, octet string
+length, unsigned integer - Number of generators to create from the seed and dst
+
+Outputs:
+
+- generators, an array of generators
+
+Procedure:
+
+1. h = XOF(seed)
+
+2. for i in 0 to length:
+
+3.    generator_i = Identity_G1
+
+4.    while(generator_i == Identity_G1 or generator_i == P1)
+
+5.        candidate = hash_to_curve_g1(h.read(64), dst)
+
+6.        if candidate not in generators: generator_i = candidate
+
+3. return generators
+
+3.3.9.  MapMessageToScalar
+
+   There are multiple ways in which messages can be mapped to their
+   respective scalar values, which is their required form to be used
+   with the sign, verify, spkGen and spkVerify operations.
+
+3.3.9.1.  MapMessageToScalarAsHash
+
+   This operation takes an input message and maps it to a scalar value
+   via a cryptographic hash function for the given curve.
+
+result = MapMessageToScalarAsHash(msg, dst)
+
+Inputs:
+
+- msg: octet string.
+- dst: Domain separation tag; Note this is not defined as a function argument as per [@!I-D.irtf-cfrg-hash-to-curve] instead as a parameter
+
+Outputs:
+
+- result: scalar value
+
+Procedure:
+
+1. result = hash_to_field(msg, 1)
+
+2. return result
 
 4.  Security Considerations
 
@@ -730,17 +839,17 @@ Procedure:
    verifiers MUST be able to verify the uniqueness of the presentation
    message values.
 
-4.6.  Implementing hash_to_point_g1 and hash_to_point_g2
+4.6.  Implementing hash_to_curve_g1
 
-   The security analysis models hash_to_point and hash_pubkey_to_point
-   as random oracles.  It is crucial that these functions are
-   implemented using a cryptographically secure hash function.  For this
-   purpose, implementations MUST meet the requirements of
+   The security analysis models hash_to_curve_g1 as random oracles.  It
+   is crucial that these functions are implemented using a
+   cryptographically secure hash function.  For this purpose,
+   implementations MUST meet the requirements of
    [I-D.irtf-cfrg-hash-to-curve].
 
    In addition, ciphersuites MUST specify unique domain separation tags
-   for hash_to_point.  The domain separation tag used in Section 1.4 is
-   the RECOMMENDED one.
+   for hash_to_curve.  Some guidance around defining this can be found
+   in Section 5.
 
 4.7.  Use of Contexts
 
@@ -773,6 +882,33 @@ Procedure:
    Section 5 which as a curve currently achieves close to 128-bit
    security.
 
+4.9.  Security against the signer.
+
+   The BBS proof, as returned by spkGen, is a zero-knowledge proof-of-
+   knowledge against an honest verifier.  This guarantees that two
+   different BBS proofs derived from the same signature will be
+   indifferentiable by a verifier (or a coalition of verifiers).  This
+   does not hold against the original signer of the signature, or
+   against a signer/verifier coalition.  Specifically, given a proof
+   derived from a BBS signature, the original signer will be able to
+   match the proof to the signature used to derive it.  As a result, a
+   signer/ verifier coalition could correlate and track the prover.
+   This also means that a verifier could ask the original signer to
+   reveal the messages that the prover choose to keep undisclosed during
+   a proof generation.  Hence, the BBS proof is NOT zero-knowledge
+   against the signer, or against dishonest verifiers cooperating with
+   the signer.
+
+   In applications where zero-knowledge is desired even against the
+   signer, the signer MUST NOT keep a copy of the signatures they issued
+   (at least not of the signed messages and the s value).  This is
+   RECOMMENDED for all applications to alleviate the danger of a leaked
+   signer's key compromising the secrecy of the messages the prover
+   choose to keep un-disclosed during a proof generation, since any
+   adversary in possession of both the secret key of the signer and the
+   value s of the signature could reveal those un-disclosed messages (by
+   calculating B as calculated at step 7 of spkGen).
+
 5.  Ciphersuites
 
    This section defines the format for a BLS ciphersuite.  It also gives
@@ -790,8 +926,28 @@ Procedure:
       to the canonical representation ostr, or INVALID if ostr is not a
       valid output of point_to_octets.
 
-   The RECOMMENDED hash-to-curve domain separation tag is the
-   ciphersuite ID string defined above.
+   *  hash_to_curve_g1: A cryptographic hash function that takes as an
+      arbitrary octet string input and returns a point in G1 as defined
+      in [I-D.irtf-cfrg-hash-to-curve].
+
+   *  hash_to_curve_g1_dst: Domain separation tag used in the
+      hash_to_curve_g1 operation
+
+   *  hash_to_field: A cryptographic hash function that follows the
+      procedure outlined in section 5.3 of [I-D.irtf-cfrg-hash-to-curve]
+
+   *  hash_to_field_dst: Domain separation tag used in the hash_to_field
+      operation
+
+   *  message_generator_seed: The seed used to generate the message
+      generators which form part of the public parameters used by the
+      BBS signature scheme, Note there are multiple possible scopes for
+      this seed including; a globally shared seed (where the resulting
+      message generators are common across all BBS signatures); a signer
+      specific seed (where the message generators are specific to a
+      signer); signature specific seed (where the message generators are
+      specific per signature).  The ciphersuite MUST define this seed OR
+      how to compute it as a pre-cursor operations to any others.
 
 5.2.  BLS12-381 Ciphersuite
 
@@ -803,6 +959,22 @@ Procedure:
    octets_to_point  follows the format documented in Appendix C section
       2 of [I-D.irtf-cfrg-pairing-friendly-curves].
 
+   hash_to_curve_g1  follows the suite defined in Appendix A.1 for the
+      G1 subgroup
+
+   hash_to_curve_g1_dst  "BBS_BLS12381G1_XOF:SHAKE-256_SSWU_RO"
+
+   hash_to_field  adopts the required parameters from the suites defined
+      in Appendix A.1 to satisfy those described in section 5.3
+      [I-D.irtf-cfrg-hash-to-curve] along with the defined dst
+
+   hash_to_field_dst  "BBS_BLS12381FQ_XOF:SHAKE-256_SSWU_RO"
+
+   message_generator_seed  A global seed value of
+      "BBS_BLS12381G1_XOF:SHAKE-256_SSWU_RO_MESSAGE_GENERATOR_SEED"
+      which is used by the Section 3.3.8 operation to compute the
+      required set of message generators.
+
 5.2.1.  Test Vectors
 
    The following section details a basic set of test vectors that can be
@@ -813,9 +985,44 @@ Procedure:
 
    *NOTE* These fixtures are a work in progress and subject to change
 
-   Further fixtures are available in Appendix A.2
+   Further fixtures are available in Appendix A.3
 
-5.2.1.1.  Key Pair
+5.2.1.1.  Message Generators
+
+   Following the procedure defined in Section 3.3.8 with an input seed
+   value of
+
+   BBS_BLS12381G1_XOF:SHAKE-256_SSWU_RO_MESSAGE_GENERATOR_SEED
+
+   a dst of
+
+   BBS_BLS12381G1_XOF:SHAKE-256_SSWU_RO_
+
+   and a length value of 10
+
+   Outputs the following values
+
+95c10133d125fd556a14b96b2f0607b757d41fbce15b61fc64ab60c4c9e3b268469abc41fb7713dc4034d3fee18eed6f
+
+a410a9c0fa4f48e14dc9f3cc11164625f98f5cc9c0e6f7690008ab6c83a073a63811caf1598d4094593bd1233bdf228e
+
+861b44ba4897f9b10b926c22c60e09c7234c76b75bfb15bcb786ee7c26430dbfe6576ffbfd2cb88ba960847b134c17f2
+
+a7f1b70c9bf41f7b686c19198fa29a2b55088e719ae1b5219046121c1d70e1d7f2eccc5ca0e6f1fb8073fac69752b455
+
+b06b73e3cfa6003d39fdaad503eaae19d9f790e5ce706f2249a96c582f2ea74fc75f0f0d3dddbcbec8192b464eae6e3f
+
+a287f77f414644ce6d1ce101486999af0a0dde5f5017314d27922350888a48d7355ac0c2d20215b12d0f4e743a4fcce8
+
+aa3ad2f578cd54daceccf6e065ae0af32d7b2173a67b2394d08203c64277dfe3d1778782a7834364a22ad1dc6002d773
+
+ab19bd40525e36bb4e132378e0596f21b32d7455de969862f3a48864eb9e2dd4c1e8bc903ceea686861b1dc0280b0b15
+
+91230b37837e5df457ff32eb129fbc5fd31de7af88cb4263b545f998a23294b073d92458be7639b6c867f4e340c209d5
+
+9594346850ba101da9f94b9856bba3843c959d22e8d6d58c3ad8b25c9a2209945ca73cdf9ce6fd51478ecc1377bdad05
+
+5.2.1.2.  Key Pair
 
    Following the procedure defined in Section 3.3.1 with an input IKM
    value as follows
@@ -831,18 +1038,18 @@ Procedure:
 
 8e146f42de0bf1754692788a4692eeed788f9555837fd208bd6d207affc12916fe25615d5afe2e386984dded54b0bd0809a82bfcd93795a85ee00f5857294cc06391fc049d0b7ea4d1d7ce65548199429dbdb0bf0946f6123daf3454c39bcae4
 
-5.2.1.2.  Valid Single Message Signature
+5.2.1.3.  Valid Single Message Signature
 
    Using the following message
 
    9872ad089e452c7b6e283dfac2a80d58e8d0ff71cc4d5e310a1debdda4a45f02
 
-   Along with the SK value as defined in Section 5.2.1.1 as inputs into
+   Along with the SK value as defined in Section 5.2.1.2 as inputs into
    the Sign operations, yields the following output signature
 
 aacb0e0ccc477de9408ec18810b508abccb975e2c8099ea93ba28bf66c836ac31189097446c5c5b67d6aa6aa1a5e01a45d2ee5348010e06d0e9ce7c0737e0e2cd40f270d3fec47e85f6900bce168c0701b87c0afae739823481f3de17823587bec26d5716a3d893a24d996396eca139e
 
-5.2.1.3.  Valid Multi-Message Signature
+5.2.1.4.  Valid Multi-Message Signature
 
    Using the following messages (*Note* the ordering of the messages
    MUST be preserved)
@@ -867,7 +1074,7 @@ aacb0e0ccc477de9408ec18810b508abccb975e2c8099ea93ba28bf66c836ac31189097446c5c5b6
 
 63333434313336643961623032646134646435393038626262613931336165366635386332636338343462383032613666383131663566623037356639623830
 
-   Along with the SK value as defined in Section 5.2.1.1 as inputs into
+   Along with the SK value as defined in Section 5.2.1.2 as inputs into
    the Sign operations, yields the following output signature
 
 89f61a400283385ab6d6233e9a7c4659e1822e280d4b9a0ba9ec867faa59a4ff27f44d956a3f2e297236342d7419a4c758385744297a55459c3a18c5ed76601e0c2226da1a95df39f9be2bbf2311b46859482c85ba0b109d5fa9b7cbaf90f9b8bc78f506666c9e64f14490441669ccc5
@@ -929,9 +1136,113 @@ aacb0e0ccc477de9408ec18810b508abccb975e2c8099ea93ba28bf66c836ac31189097446c5c5b6
 
 Appendix A.  Appendix
 
-A.1.  Usecases
+A.1.  BLS12-381 hash_to_curve definition using SHAKE-256
 
-A.1.1.  Non-correlating Security Token
+   The following defines a hash_to_curve suite
+   [I-D.irtf-cfrg-hash-to-curve] for the BLS12-381 curve for both the G1
+   and G2 subgroups using the extendable output function (XOF) of
+   SHAKE-256 as per the guidance defined in section 8.9 of
+   [I-D.irtf-cfrg-hash-to-curve].
+
+   Note the notation used in the below definitions is sourced from
+   [I-D.irtf-cfrg-hash-to-curve].
+
+A.1.1.  BLS12-381 G1
+
+   The suite of BLS12381G1_XOF:SHAKE-256_SSWU_R0_ is defined as follows:
+
+* encoding type: hash_to_curve (Section 3 of [@!I-D.irtf-cfrg-hash-to-curve])
+
+* E: y^2 = x^3 + 4
+
+* p: 0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab
+
+* m: 1
+
+* k: 128
+
+* expand_message: expand_message_xof (Section 5.4.2 of [@!I-D.irtf-cfrg-hash-to-curve])
+
+* H: SHAKE-256
+
+* L: 64
+
+* f: Simplified SWU for AB == 0 (Section 6.6.3 of [@!I-D.irtf-cfrg-hash-to-curve])
+
+* Z: 11
+
+*  E': y'^2 = x'^3 + A' * x' + B', where
+
+      -  A' = 0x144698a3b8e9433d693a02c96d4982b0ea985383ee66a8d8e8981aef
+         d881ac98936f8da0e0f97f5cf428082d584c1d
+
+      -  B' = 0x12e2908d11688030018b12e8753eee3b2016c1f0f24f4070a0b9c14f
+         cef35ef55a23215a316ceaa5d1cc48e98e172be0
+
+*  iso_map: the 11-isogeny map from E' to E given in Appendix E.2 of [@!I-D.irtf-cfrg-hash-to-curve]
+
+*  h_eff: 0xd201000000010001
+
+   Note that the h_eff values for this suite are copied from that
+   defined for the BLS12381G1_XMD:SHA-256_SSWU_RO_ suite defined in
+   section 8.8.1 of [I-D.irtf-cfrg-hash-to-curve].
+
+   An optimized example implementation of the Simplified SWU mapping to
+   the curve E' isogenous to BLS12-381 G1 is given in Appendix F.2
+   [I-D.irtf-cfrg-hash-to-curve].
+
+A.1.2.  BLS12-381 G2
+
+   The suite of BLS12381G2_XOF:SHAKE-256_SSWU_R0_ is defined as follows:
+
+* encoding type: hash_to_curve (Section 3 of [@!I-D.irtf-cfrg-hash-to-curve])
+
+* E: y^2 = x^3 + 4 * (1 + I)
+
+* base field F is GF(p^m), where
+
+  -  p: 0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6
+         b0f6241eabfffeb153ffffb9feffffffffaaab
+
+  -  m: 2
+
+  -  (1, I) is the basis for F, where I^2 + 1 == 0 in F
+
+* k: 128
+
+* expand_message: expand_message_xof (Section 5.4.2 of [@!I-D.irtf-cfrg-hash-to-curve])
+
+* H: SHAKE-256
+
+* L: 64
+
+* f: Simplified SWU for AB == 0 (Section 6.6.3 of [@!I-D.irtf-cfrg-hash-to-curve])
+
+* Z: -(2 + I)
+
+*  E': y'^2 = x'^3 + A' * x' + B', where
+
+      -  A' = 240 * I
+
+      -  B' = 1012 * (1 + I)
+
+*  iso_map: the isogeny map from E' to E given in Appendix E.3 of [@!I-D.irtf-cfrg-hash-to-curve]
+
+*  h_eff: 0xbc69f08f2ee75b3584c6a0ea91b352888e2a8e9145ad7689986ff0315
+  08ffe1329c2f178731db956d82bf015d1212b02ec0ec69d7477c1ae954cbc06689
+  f6a359894c0adebbf6b4e8020005aaa95551
+
+   Note that the h_eff values for this suite are copied from that
+   defined for the BLS12381G2_XMD:SHA-256_SSWU_RO_ suite defined in
+   section 8.8.1 of [I-D.irtf-cfrg-hash-to-curve].
+
+   An optimized example implementation of the Simplified SWU mapping to
+   the curve E' isogenous to BLS12-381 G2 is given in Appendix F.2
+   [I-D.irtf-cfrg-hash-to-curve].
+
+A.2.  Usecases
+
+A.2.1.  Non-correlating Security Token
 
    In the most general sense BBS signatures can be used in any
    application where a cryptographically secured token is required but
@@ -962,7 +1273,7 @@ A.1.1.  Non-correlating Security Token
    unique proof from the original access token and include that in the
    request instead, thus removing this vector of correlation.
 
-A.1.2.  Improved Bearer Security Token
+A.2.2.  Improved Bearer Security Token
 
    Bearer based security tokens such as JWT based access tokens used in
    the OAuth2.0 protocol are a highly popular format for expressing
@@ -1005,23 +1316,23 @@ A.1.2.  Improved Bearer Security Token
    mitigated.  A resource server also obtains the ability to detect a
    replay attack by ensuring the proof presented is unique.
 
-A.1.3.  Hardware Attestations
+A.2.3.  Hardware Attestations
 
    TODO
 
-A.1.4.  Selectively Disclosure Enabled Identity Assertions
+A.2.4.  Selectively Disclosure Enabled Identity Assertions
 
    TODO
 
-A.1.5.  Privacy preserving bound signatures
+A.2.5.  Privacy preserving bound signatures
 
    TODO
 
-A.2.  Additional BLS12-381 Ciphersuite Test Vectors
+A.3.  Additional BLS12-381 Ciphersuite Test Vectors
 
    *NOTE* These fixtures are a work in progress and subject to change
 
-A.2.1.  Modified Message Signature
+A.3.1.  Modified Message Signature
 
    Using the following message
 
@@ -1031,11 +1342,11 @@ A.2.1.  Modified Message Signature
 
 aacb0e0ccc477de9408ec18810b508abccb975e2c8099ea93ba28bf66c836ac31189097446c5c5b67d6aa6aa1a5e01a45d2ee5348010e06d0e9ce7c0737e0e2cd40f270d3fec47e85f6900bce168c0701b87c0afae739823481f3de17823587bec26d5716a3d893a24d996396eca139e
 
-   Along with the PK value as defined in Section 5.2.1.1 as inputs into
+   Along with the PK value as defined in Section 5.2.1.2 as inputs into
    the Verify operation should fail signature validation due to the
    message value being different from what was signed
 
-A.2.2.  Extra Unsigned Message Signature
+A.3.2.  Extra Unsigned Message Signature
 
    Using the following messages
 
@@ -1047,11 +1358,11 @@ A.2.2.  Extra Unsigned Message Signature
 
 aacb0e0ccc477de9408ec18810b508abccb975e2c8099ea93ba28bf66c836ac31189097446c5c5b67d6aa6aa1a5e01a45d2ee5348010e06d0e9ce7c0737e0e2cd40f270d3fec47e85f6900bce168c0701b87c0afae739823481f3de17823587bec26d5716a3d893a24d996396eca139e
 
-   Along with the PK value as defined in Section 5.2.1.1 as inputs into
+   Along with the PK value as defined in Section 5.2.1.2 as inputs into
    the Verify operation should fail signature validation due to an
    additional message being supplied that was not signed
 
-A.2.3.  Missing Message Signature
+A.3.3.  Missing Message Signature
 
    Using the following messages
 
@@ -1063,11 +1374,11 @@ A.2.3.  Missing Message Signature
 
 89f61a400283385ab6d6233e9a7c4659e1822e280d4b9a0ba9ec867faa59a4ff27f44d956a3f2e297236342d7419a4c758385744297a55459c3a18c5ed76601e0c2226da1a95df39f9be2bbf2311b46859482c85ba0b109d5fa9b7cbaf90f9b8bc78f506666c9e64f14490441669ccc5
 
-   Along with the PK value as defined in Section 5.2.1.1 as inputs into
+   Along with the PK value as defined in Section 5.2.1.2 as inputs into
    the Verify operation should fail signature validation due to missing
    messages that were originally present during the signing
 
-A.2.4.  Reordered Message Signature
+A.3.4.  Reordered Message Signature
 
    Using the following messages
 
@@ -1095,11 +1406,11 @@ A.2.4.  Reordered Message Signature
 
 89f61a400283385ab6d6233e9a7c4659e1822e280d4b9a0ba9ec867faa59a4ff27f44d956a3f2e297236342d7419a4c758385744297a55459c3a18c5ed76601e0c2226da1a95df39f9be2bbf2311b46859482c85ba0b109d5fa9b7cbaf90f9b8bc78f506666c9e64f14490441669ccc5
 
-   Along with the PK value as defined in Section 5.2.1.1 as inputs into
+   Along with the PK value as defined in Section 5.2.1.2 as inputs into
    the Verify operation should fail signature validation due to messages
    being re-ordered from the order in which they were signed
 
-A.2.5.  Wrong Public Key Signature
+A.3.5.  Wrong Public Key Signature
 
    Using the following messages
 
@@ -1127,7 +1438,7 @@ A.2.5.  Wrong Public Key Signature
 
 89f61a400283385ab6d6233e9a7c4659e1822e280d4b9a0ba9ec867faa59a4ff27f44d956a3f2e297236342d7419a4c758385744297a55459c3a18c5ed76601e0c2226da1a95df39f9be2bbf2311b46859482c85ba0b109d5fa9b7cbaf90f9b8bc78f506666c9e64f14490441669ccc5
 
-   Along with the PK value as defined in Section 5.2.1.1 as inputs into
+   Along with the PK value as defined in Section 5.2.1.2 as inputs into
    the Verify operation should fail signature validation due to public
    key used to verify is in-correct
 
