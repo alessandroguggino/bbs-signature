@@ -1158,7 +1158,7 @@ svg [stroke="fill"], svg [fill^="#fff"] {
                 <p id="section-toc.1-1.4.2.8.1"><a href="#section-4.8" class="xref">4.8</a>.  <a href="#name-choice-of-underlying-curve" class="xref">Choice of underlying curve</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.9">
-                <p id="section-toc.1-1.4.2.9.1"><a href="#section-4.9" class="xref">4.9</a>.  <a href="#name-security-against-the-signer" class="xref">Security against the signer.</a></p>
+                <p id="section-toc.1-1.4.2.9.1"><a href="#section-4.9" class="xref">4.9</a>.  <a href="#name-security-of-spkgen" class="xref">Security of spkGen</a></p>
 </li>
             </ul>
 </li>
@@ -2044,13 +2044,12 @@ Procedure:
 <p id="section-4.8-1">BBS signatures can be implemented on any pairing-friendly curve. However care MUST be taken when selecting one that is appropriate, this specification defines a profile for using the BLS12-381 curve in <a href="#ciphersuites" class="xref">Section 5</a> which as a curve currently achieves close to 128-bit security.<a href="#section-4.8-1" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="security-against-the-signer">
+<div id="security-of-spkgen">
 <section id="section-4.9">
-        <h3 id="name-security-against-the-signer">
-<a href="#section-4.9" class="section-number selfRef">4.9. </a><a href="#name-security-against-the-signer" class="section-name selfRef">Security against the signer.</a>
+        <h3 id="name-security-of-spkgen">
+<a href="#section-4.9" class="section-number selfRef">4.9. </a><a href="#name-security-of-spkgen" class="section-name selfRef">Security of spkGen</a>
         </h3>
-<p id="section-4.9-1">The BBS proof, as returned by spkGen, is a zero-knowledge proof-of-knowledge against an honest verifier. This guarantees that two different BBS proofs derived from the same signature will be indifferentiable by a verifier (or a coalition of verifiers). This does not hold against the original signer of the signature, or against a signer/verifier coalition. Specifically, given a proof derived from a BBS signature, the original signer will be able to match the proof to the signature used to derive it. As a result, a signer/ verifier coalition could correlate and track the prover. This also means that a verifier could ask the original signer to reveal the messages that the prover choose to keep undisclosed during a proof generation. Hence, the BBS proof is NOT zero-knowledge against the signer, or against dishonest verifiers cooperating with the signer.<a href="#section-4.9-1" class="pilcrow">¶</a></p>
-<p id="section-4.9-2">In applications where zero-knowledge is desired even against the signer, the signer MUST NOT keep a copy of the signatures they issued (at least not of the signed messages and the <code>s</code> value). This is RECOMMENDED for all applications to alleviate the danger of a leaked signer's key compromising the secrecy of the messages the prover choose to keep un-disclosed during a proof generation, since any adversary in possession of both the secret key of the signer and the value <code>s</code> of the signature could reveal those un-disclosed messages (by calculating <code>B</code> as calculated at step 7 of spkGen).<a href="#section-4.9-2" class="pilcrow">¶</a></p>
+<p id="section-4.9-1">The BBS proof, as returned by spkGen, is a zero-knowledge proof-of-knowledge <span>[<a href="#CDL16" class="xref">CDL16</a>]</span>. This guarantees that no information will be revealed about the signature itself or the undisclosed messages, from the output of spkGen. Note that the security proofs in <span>[<a href="#CDL16" class="xref">CDL16</a>]</span> work on type 3 pairing setting. This means that G1 should be different from G2 and with no efficient isomorphism between them.<a href="#section-4.9-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -2314,6 +2313,10 @@ ab19bd40525e36bb4e132378e0596f21b32d7455de969862f3a48864eb9e2dd4c1e8bc903ceea686
 <a href="#section-8" class="section-number selfRef">8. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
       </h2>
 <dl class="references">
+<dt id="CDL16">[CDL16]</dt>
+      <dd>
+<span class="refAuthor">Camenisch, J.</span>, <span class="refAuthor">Drijvers, M.</span>, and <span class="refAuthor">A. Lehmann</span>, <span class="refTitle">"Anonymous Attestation Using the Strong Diffie Hellman Assumption Revisited"</span>, <span class="seriesInfo">Springer, Cham</span>, <time datetime="2016" class="refDate">2016</time>, <span>&lt;<a href="https://eprint.iacr.org/2016/663.pdf">https://eprint.iacr.org/2016/663.pdf</a>&gt;</span>. </dd>
+<dd class="break"></dd>
 <dt id="I-D.irtf-cfrg-bls-signature">[I-D.irtf-cfrg-bls-signature]</dt>
     <dd>
 <span class="refAuthor">Boneh, D.</span>, <span class="refAuthor">Gorbunov, S.</span>, <span class="refAuthor">Wahby, R. S.</span>, <span class="refAuthor">Wee, H.</span>, and <span class="refAuthor">Z. Zhang</span>, <span class="refTitle">"BLS Signatures"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-irtf-cfrg-bls-signature-04</span>, <time datetime="2020-09-10" class="refDate">10 September 2020</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04">https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-bls-signature-04</a>&gt;</span>. </dd>
